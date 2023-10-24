@@ -35,18 +35,20 @@ def atom_to_sld(atom):
     sld = []
     for i in range(len(atom)):
         if atom[i][0] == 'H':
-            sld.append(1.68e-5)
+            sld.append(1.19e-6)
         elif atom[i][0] == 'C':
-            sld.append(8.50e-6)
+            sld.append(18.71e-6)
         elif atom[i][0] == 'N':
-            sld.append(8.52e-6)
+            sld.append(6.88e-6)
         elif atom[i][0] == 'O':
-            sld.append(8.54e-6)
+            sld.append(9.73e-6)
         elif atom[i][0] == 'P':
-            sld.append(8.38e-6)
+            sld.append(15.26e-6)
         elif atom[i][0] == 'S':
-            sld.append(8.64e-6)
-    sld = np.array(sld)
+            sld.append(17.896e-6)
+    sld_water = 9.46e-6
+    sld = np.array(sld) - sld_water
+    sld[sld < 0] = 0
     return sld
 
 def load_pdb(filename):
