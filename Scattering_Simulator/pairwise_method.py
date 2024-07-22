@@ -2,11 +2,13 @@ import pandas as pd
 import numpy as np
 import scipy
 import matplotlib.pyplot as plt
+from scipy.ndimage import gaussian_filter1d
+import h5py
 
 class scattering_simulator:
     def __init__(self, n_samples):
         self.n_samples = n_samples
-        np.random.seed(1)
+        #np.random.seed(1)
         return 
 
     def sample_building_block(self, building_block_coordinates):
@@ -19,10 +21,10 @@ class scattering_simulator:
         - self.building_block_coordinates_1: an array with randomly sampled coordinates from the building block
         - self.building_block_coordinates_2: an array with randomly sampled coordinates from the building block
         '''
-        np.random.seed(1)
+        #np.random.seed(1)
         building_block_coordinates = self.relative_coordinates(building_block_coordinates)
-        rand_num1 = np.random.randint(0,len(building_block_coordinates), self.n_samples)
-        rand_num2 = np.random.randint(0,len(building_block_coordinates), self.n_samples)
+        rand_num1 = np.random.randint(0,int(len(building_block_coordinates)), self.n_samples)
+        rand_num2 = np.random.randint(0,int(len(building_block_coordinates)), self.n_samples)
         self.building_block_coordinates_1 = building_block_coordinates[rand_num1,:]
         self.building_block_coordinates_2 = building_block_coordinates[rand_num2,:]
 
@@ -39,17 +41,20 @@ class scattering_simulator:
          - self.lattice_coordinates_1: an array with randomly sampled coordinates from the lattice
          - self.lattice_coordinates_2: an array with randomly sampled coordinates from the lattice
          '''
-        np.random.seed(1)
+        #np.random.seed(1)
         rand_num_x = np.random.randint(0,lattice_points_x, self.n_samples)
         rand_num_y = np.random.randint(0,lattice_points_y, self.n_samples)
         rand_num_z = np.random.randint(0,lattice_points_z, self.n_samples)
+
         lattice_coordinates_x = d_x*rand_num_x
         lattice_coordinates_y = d_y*rand_num_y
         lattice_coordinates_z = d_z*rand_num_z
         self.lattice_coordinates_1 = np.hstack((lattice_coordinates_x.reshape(-1,1), lattice_coordinates_y.reshape(-1,1), lattice_coordinates_z.reshape(-1,1)))
+        
         rand_num_x = np.random.randint(0,lattice_points_x, self.n_samples)
         rand_num_y = np.random.randint(0,lattice_points_y, self.n_samples)
         rand_num_z = np.random.randint(0,lattice_points_z, self.n_samples)
+
         lattice_coordinates_x = d_x*rand_num_x
         lattice_coordinates_y = d_y*rand_num_y
         lattice_coordinates_z = d_z*rand_num_z
@@ -59,6 +64,32 @@ class scattering_simulator:
             rand_num_x = 0
             rand_num_y = 0
             rand_num_z = 0
+
+    def sample_lattice_coordinates(self, lattice_coordinates, save=False):
+        '''Randomly samples ''n_samples'' number of points from the lattice
+        inputs:
+         - lattice_coordinates: 3d coordinates of the lattice 
+         results:
+         - self.lattice_coordinates_1: an array with randomly sampled coordinates from the lattice
+         - self.lattice_coordinates_2: an array with randomly sampled coordinates from the lattice
+         '''
+        #np.random.seed(1)
+        rand_num = np.random.randint(0,lattice_coordinates.shape[0], self.n_samples)
+        lattice_coordinates_x = lattice_coordinates[rand_num, 0]
+        lattice_coordinates_y = lattice_coordinates[rand_num, 1]
+        lattice_coordinates_z = lattice_coordinates[rand_num, 2]
+        self.lattice_coordinates_1 = np.hstack((lattice_coordinates_x.reshape(-1,1), lattice_coordinates_y.reshape(-1,1), lattice_coordinates_z.reshape(-1,1)))
+        rand_num = np.random.randint(0,lattice_coordinates.shape[0], self.n_samples)
+        lattice_coordinates_x = lattice_coordinates[rand_num, 0]
+        lattice_coordinates_y = lattice_coordinates[rand_num, 1]
+        lattice_coordinates_z = lattice_coordinates[rand_num, 2]
+        self.lattice_coordinates_2 = np.hstack((lattice_coordinates_x.reshape(-1,1), lattice_coordinates_y.reshape(-1,1), lattice_coordinates_z.reshape(-1,1)))
+        #free up storage 
+        if save == False:
+            rand_num_x = 0
+            rand_num_y = 0
+            rand_num_z = 0
+
 
     def calculate_structure_coordinates(self, save=False):
         '''Adds the building block coordinates to the lattice coordinates to obtain the structure coordinates
@@ -160,6 +191,7 @@ class scattering_simulator:
         else:
             SLD = self.structure_coordinates_1[:,-1]*self.structure_coordinates_2[:,-1]
             x = np.histogram(self.distances, bins = bins, weights = SLD)
+        #self.p_r = gaussian_filter1d(x[0], 30)
         self.p_r = x[0]
         self.r = x[1][1:]
         #self.p_r = self.p_r/np.max(self.p_r)
@@ -173,8 +205,8 @@ class scattering_simulator:
         results:
         - self.I_q: the scattering intensity curve as a function of q 
         '''
-
         I_q = []
+        self.q = q
         for i in range(len(q)):
             #I = (scipy.integrate.simps(self.p_r*np.sin(q[i]*self.r)/q[i]/self.r, self.r))*2 + self.n_samples
             I = (scipy.integrate.simps(4*np.pi*self.p_r*np.sin(q[i]*self.r)/q[i]/self.r, self.r))
@@ -220,6 +252,89 @@ class scattering_simulator:
         self.create_histogram(bins)
         self.convert_to_intensity(q)
         return self.I_q
+    
+    def simulate_scattering_curve_fast(self, coordinates, bins, q, save=False):
+        '''Runs the simulation to calculate the scattering curve in a loop with a reduced number of n_samples:
+            Only works with buliding block setting
+        - coordinates: coordinates of the structure to calculate the scattering curve
+        - bins: number of bins used to create the histogram 
+        - q: the momentum transfer vector (q) 
+        outputs:
+        - self.I_q: the scattering intensity curve as a function of q '''
+
+        self.n_samples = int(np.round(self.n_samples/5))
+        for i in range(5):
+            self.sample_building_block(coordinates)
+            self.use_building_block_as_structure()
+            self.distance_function(save=False)
+            self.create_histogram(bins)
+            if i == 0:
+                all_p_r = self.p_r
+            else:
+                all_p_r = all_p_r + self.p_r
+        self.p_r = all_p_r
+        self.convert_to_intensity(q)
+        return self.I_q
+    
+    def save_h5py(self, dir):
+        '''Saves results in h5py format into specified directory'''
+        h5f = h5py.File(dir, 'w')
+        h5f.create_dataset('q', data=self.q)
+        h5f.create_dataset('I', data=self.I_q)
+        h5f.create_dataset('r', data=self.r)
+        h5f.create_dataset('p_r', data=self.p_r)
+        #h5f.create_dataset('structure', data=self.structure_coordinates_1)
+        h5f.create_dataset('N', data=self.n_samples)
+
+
+
+    def simulate_multiple_scattering_curves(self, coordinates, bins, q, save=False):
+        '''Function to run the calculation of the coordinates of the structure to multiple scattering intensity curves
+        and obtain the uncertainty of each point.
+        inputs:
+        - bins: number of bins used to create the histogram 
+        - q: the momentum transfer vector (q) 
+        outputs:
+        - self.I_q: the scattering intensity curve as a function of q '''
+        n_samples_array  = np.linspace(0.5, 1.5, 10)*self.n_samples
+        for i in range(len(n_samples_array)):
+            self.n_samples = int(np.round(n_samples_array[i]))
+            self.sample_building_block(coordinates)
+            self.use_building_block_as_structure()
+            self.distance_function(save=save)
+            self.create_histogram(bins)
+            self.convert_to_intensity(q)
+            self.I_q = self.I_q/self.I_q[0]
+            if i == 0:
+                Intensities = self.I_q.reshape(-1,1)
+            else:
+                Intensities = np.hstack((Intensities, self.I_q.reshape(-1,1)))
+        return Intensities
+
+    def simulate_multiple_scattering_curves_lattice(self, coordinates, bins, q, lattice_spacing_x, lattice_spacing_y, lattice_spacing_z, lattice_points_x, lattice_points_y, lattice_points_z, save=False):
+        '''Function to run the calculation of the coordinates of the structure to multiple scattering intensity curves
+        and obtain the uncertainty of each point.
+        inputs:
+        - bins: number of bins used to create the histogram 
+        - q: the momentum transfer vector (q) 
+        outputs:
+        - self.I_q: the scattering intensity curve as a function of q '''
+        n_samples_array  = np.linspace(0.5, 1.5, 10)*self.n_samples
+        for i in range(len(n_samples_array)):
+            self.n_samples = int(np.round(n_samples_array[i]))
+            self.sample_building_block(coordinates)
+            self.sample_lattice_function(lattice_spacing_x, lattice_spacing_y, lattice_spacing_z, lattice_points_x, lattice_points_y, lattice_points_z)
+            self.calculate_structure_coordinates()
+            self.distance_function(save=save)
+            self.create_histogram(bins)
+            self.convert_to_intensity(q)
+            self.I_q = self.I_q/self.I_q[0]
+            if i == 0:
+                Intensities = self.I_q.reshape(-1,1)
+            else:
+                Intensities = np.hstack((Intensities, self.I_q.reshape(-1,1)))
+        return Intensities
+
 
 
     def simulate_smeared_scattering_curve(self, bins, q, smearing, save=False):

@@ -46,6 +46,20 @@ def atom_to_sld(atom):
             sld.append(15.26e-6)
         elif atom[i][0] == 'S':
             sld.append(17.896e-6)
+        else:
+            if atom[i][1] == 'H':
+                sld.append(1.19e-6)
+            elif atom[i][1] == 'C':
+                sld.append(18.71e-6)
+            elif atom[i][1] == 'N':
+                sld.append(6.88e-6)
+            elif atom[i][1] == 'O':
+                sld.append(9.73e-6)
+            elif atom[i][1] == 'P':
+                sld.append(15.26e-6)
+            elif atom[i][1] == 'S':
+                sld.append(17.896e-6)
+
     sld_water = 9.46e-6
     sld = np.array(sld) - sld_water
     sld[sld < 0] = 0
@@ -65,3 +79,24 @@ def load_pdb(filename):
     sld = atom_to_sld(atom)
     coordinates = np.hstack((x_pos.reshape(-1,1), y_pos.reshape(-1,1), z_pos.reshape(-1,1), sld.reshape(-1,1)))
     return coordinates
+
+def export_PDB(coordinates, dir):
+    '''Creates a PDB style file in a txt format'''
+    length = len(coordinates)
+    coordinates = np.round(coordinates, 2)
+    col1 = np.array(['ATOM     ']*length).reshape(-1,1)
+    col2 = np.array(np.arange(1, length+1, 1)).reshape(-1,1)
+    col3 = np.array([' O']*length).reshape(-1,1)
+    col4 = np.array(['  SER']*length).reshape(-1,1)
+    col5 = np.array([ 'A  ']*length).reshape(-1,1)
+    col6 = np.array([1]*length).reshape(-1,1)
+    col7 = np.array(['   ']*length).reshape(-1,1)
+    col8 = np.array(coordinates[:,0]).reshape(-1,1)
+    col9 = np.array(coordinates[:,1]).reshape(-1,1)
+    col10 = np.array(['   ']*length).reshape(-1,1)
+    col11 = np.array(coordinates[:,2]).reshape(-1,1)
+    col12 = np.array([' 1.00 ']*length).reshape(-1,1)
+    col13 = np.array(['0.00        ']*length).reshape(-1,1)
+    file = np.hstack((col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11, col12, col13, col3))
+    np.savetxt(dir, file,  fmt="%s") #save merged data as npy 
+    return file

@@ -1,0 +1,17 @@
+Sphere size:
+sphere_coordinates = np.load('../Data/coordinates/sphere_2512points.npy')
+sphere_coordinates = sphere_coordinates*100/95
+
+
+n = 20
+d = 260 (spacing between particles)
+d_center = 320 (radius of assembly)
+var = 18 (random displacement)
+Model used: FCC
+
+N = 15 (number of samples used to calculate the average) 
+
+
+background = 1e4
+plt.plot(q, I_q + background, linewidth = 3, label = 'BCC')
+plt.scatter(exp_data[:,0], exp_data[:,1]*3e7, s=6, label = 'Exp Data', color = 'green')
