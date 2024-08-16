@@ -1,8 +1,5 @@
-import pandas as pd
 import numpy as np
 import scipy
-import matplotlib.pyplot as plt
-from scipy.ndimage import gaussian_filter1d
 import h5py
 
 class scattering_simulator:
@@ -191,10 +188,8 @@ class scattering_simulator:
         else:
             SLD = self.structure_coordinates_1[:,-1]*self.structure_coordinates_2[:,-1]
             x = np.histogram(self.distances, bins = bins, weights = SLD)
-        #self.p_r = gaussian_filter1d(x[0], 30)
         self.p_r = x[0]
         self.r = x[1][1:]
-        #self.p_r = self.p_r/np.max(self.p_r)
 
     def convert_to_intensity(self, q):
         '''Converts the pairwise distribution function into the scattering intensity as a function of q 
@@ -208,38 +203,25 @@ class scattering_simulator:
         I_q = []
         self.q = q
         for i in range(len(q)):
-            #I = (scipy.integrate.simps(self.p_r*np.sin(q[i]*self.r)/q[i]/self.r, self.r))*2 + self.n_samples
             I = (scipy.integrate.simps(4*np.pi*self.p_r*np.sin(q[i]*self.r)/q[i]/self.r, self.r))
-            #I = np.sum(np.cos(q[i]*self.distances))**2 + np.sum(np.sin(q[i]*self.distances))**2
             I_q.append(I)
         self.I_q = np.array(I_q)
 
-        # self.p_r = self.convert_to_pairwise(self.r, self.I_q, q)
-        
-
-        # I_q = []
-        # for i in range(len(q)):
-        #     I = (scipy.integrate.simps(4*np.pi*self.p_r*np.sin(q[i]*self.r)/q[i]/self.r, self.r))
-        #     #I = np.sum(np.cos(q[i]*self.distances))**2 + np.sum(np.sin(q[i]*self.distances))**2
-        #     I_q.append(I)
-        # self.I_q = np.array(I_q)
-
 
     def convert_to_pairwise(self, r, I, q):
+        '''Converts the scattering intensity back to the pairwise distribution function
+        inputs: 
+        - r: the pairwise distances of the two randomly sampled coordinates of the structure
+        - I: the scattering intensity 
+        - q: the momentum transfer vector
+        outputs:
+        - p_r: the pairwise distribution which is a function of (r)'''
         p_r = []
         for i in range(len(r)):
             p = scipy.integrate.simps(I*q*r[i]*np.sin(q*r[i]), q)
             p_r.append(p)
         p_r = np.array(p_r)
         return p_r
-
-    def convert_to_smeared_intensity(self, q, smearing):
-        I_qsmeared = []
-        q_mean = np.mean(q)
-        R = 1/np.sqrt(2*np.pi*smearing**2)*np.exp(-(q - q_mean)**2/(2*smearing**2))
-        Iqs = np.sum(self.I_q*R)
-        self.I_q = Iqs
-
 
     def simulate_scattering_curve(self, bins, q, save=False):
         '''Function to run the calculation of the coordinates of the structure to the scattering intensity curve
@@ -255,8 +237,9 @@ class scattering_simulator:
     
     def simulate_scattering_curve_fast(self, coordinates, bins, q, save=False):
         '''Runs the simulation to calculate the scattering curve in a loop with a reduced number of n_samples:
+            It is slightly faster than the normal method of calculating the scattering curve 
             Only works with buliding block setting
-        - coordinates: coordinates of the structure to calculate the scattering curve
+        - coordinates: coordinates of the building block structure
         - bins: number of bins used to create the histogram 
         - q: the momentum transfer vector (q) 
         outputs:
@@ -276,26 +259,45 @@ class scattering_simulator:
         self.convert_to_intensity(q)
         return self.I_q
     
-    def save_h5py(self, dir):
-        '''Saves results in h5py format into specified directory'''
-        h5f = h5py.File(dir, 'w')
-        h5f.create_dataset('q', data=self.q)
-        h5f.create_dataset('I', data=self.I_q)
-        h5f.create_dataset('r', data=self.r)
-        h5f.create_dataset('p_r', data=self.p_r)
-        #h5f.create_dataset('structure', data=self.structure_coordinates_1)
-        h5f.create_dataset('N', data=self.n_samples)
 
+    def simulate_scattering_curve_fast_lattice(self, coordinates, lattice, bins, q, save=False):
+        '''Runs the simulation to calculate the scattering curve in a loop with a reduced number of n_samples.
+           It is slightly faster than the normal method. 
+           This function is used when there is a building block and lattice coordinates. 
 
-
-    def simulate_multiple_scattering_curves(self, coordinates, bins, q, save=False):
-        '''Function to run the calculation of the coordinates of the structure to multiple scattering intensity curves
-        and obtain the uncertainty of each point.
-        inputs:
+        - coordinates: coordinates of the building block structure
+        - lattice: the coordinates of the lattice where each building block is placed 
         - bins: number of bins used to create the histogram 
         - q: the momentum transfer vector (q) 
         outputs:
         - self.I_q: the scattering intensity curve as a function of q '''
+
+        self.n_samples = int(np.round(self.n_samples/5))
+        for i in range(5):
+            self.sample_building_block(coordinates)
+            self.sample_lattice_coordinates(lattice)
+            self.calculate_structure_coordinates()
+            self.distance_function(save=False)
+            self.create_histogram(bins)
+            if i == 0:
+                all_p_r = self.p_r
+            else:
+                all_p_r = all_p_r + self.p_r
+        self.p_r = all_p_r
+        self.convert_to_intensity(q)
+        return self.I_q
+
+
+    def simulate_multiple_scattering_curves(self, coordinates, bins, q, save=False):
+        '''Function to obtain multiple scattering curves of the same structure using different values of n_samples.
+        This results in a more accurate scattering curve. 
+        This function only works for the building block setting. 
+        inputs:
+        - coordinates: the coordinates of the building block 
+        - bins: number of bins used to create the histogram 
+        - q: the momentum transfer vector (q) 
+        outputs:
+        - Intensities: the scattering intensity curves as a function of q'''
         n_samples_array  = np.linspace(0.5, 1.5, 10)*self.n_samples
         for i in range(len(n_samples_array)):
             self.n_samples = int(np.round(n_samples_array[i]))
@@ -312,13 +314,15 @@ class scattering_simulator:
         return Intensities
 
     def simulate_multiple_scattering_curves_lattice(self, coordinates, bins, q, lattice_spacing_x, lattice_spacing_y, lattice_spacing_z, lattice_points_x, lattice_points_y, lattice_points_z, save=False):
-        '''Function to run the calculation of the coordinates of the structure to multiple scattering intensity curves
-        and obtain the uncertainty of each point.
+        '''Function to obtain multiple scattering curves of the same structure using different values of n_samples.
+        This results in a more accurate scattering curve. 
+        This function only works for the building block and lattice function setting. 
         inputs:
+        - coordinates: the coordinates of the building block 
         - bins: number of bins used to create the histogram 
         - q: the momentum transfer vector (q) 
         outputs:
-        - self.I_q: the scattering intensity curve as a function of q '''
+        - Intensities: the scattering intensity curves as a function of q'''
         n_samples_array  = np.linspace(0.5, 1.5, 10)*self.n_samples
         for i in range(len(n_samples_array)):
             self.n_samples = int(np.round(n_samples_array[i]))
@@ -335,20 +339,41 @@ class scattering_simulator:
                 Intensities = np.hstack((Intensities, self.I_q.reshape(-1,1)))
         return Intensities
 
-
-
-    def simulate_smeared_scattering_curve(self, bins, q, smearing, save=False):
-        '''Function to run the calculation of the coordinates of the structure to the scattering intensity curve
+    def simulate_multiple_scattering_curves_lattice_coords(self, coordinates, lattice_coords, bins, q,save=False):
+        '''Function to obtain multiple scattering curves of the same structure using different values of n_samples.
+        This results in a more accurate scattering curve. 
+        This function only works for the building block and lattice coordinates setting. 
         inputs:
+        - coordinates: the coordinates of the building block 
         - bins: number of bins used to create the histogram 
         - q: the momentum transfer vector (q) 
         outputs:
-        - self.I_q: the scattering intensity curve as a function of q '''
-        self.distance_function(save=save)
-        self.create_histogram(bins)
-        self.convert_to_intensity(q)
-        self.convert_to_smeared_intensity(q, smearing)
-        return self.I_q
+        - Intensities: the scattering intensity curves as a function of q'''
+        n_samples_array  = np.linspace(0.5, 1.5, 10)*self.n_samples
+        for i in range(len(n_samples_array)):
+            self.n_samples = int(np.round(n_samples_array[i]))
+            self.I_q = self.simulate_scattering_curve_fast_lattice(coordinates, lattice_coords, bins, q)
+            #self.I_q = self.I_q/self.I_q[0]
+            if i == 0:
+                Intensities = self.I_q.reshape(-1,1)
+            else:
+                Intensities = np.hstack((Intensities, self.I_q.reshape(-1,1)))
+        return Intensities
+
+    def save_h5py(self, dir):
+        '''Saves results in h5py format into specified directory
+        inputs:
+        - dir: the directory where the file should be saved'''
+        h5f = h5py.File(dir, 'w')
+        h5f.create_dataset('q', data=self.q)
+        h5f.create_dataset('I', data=self.I_q)
+        h5f.create_dataset('r', data=self.r)
+        h5f.create_dataset('p_r', data=self.p_r)
+        #h5f.create_dataset('structure', data=self.structure_coordinates_1)
+        h5f.create_dataset('N', data=self.n_samples)
+
+
+
 
 
     ########## The following equations are used to run the Debye method #############
