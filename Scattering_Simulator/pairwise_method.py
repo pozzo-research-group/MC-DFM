@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import scipy
 import h5py
 
@@ -72,20 +73,9 @@ class scattering_simulator:
          '''
         #np.random.seed(1)
         rand_num = np.random.randint(0,lattice_coordinates.shape[0], self.n_samples)
-        lattice_coordinates_x = lattice_coordinates[rand_num, 0]
-        lattice_coordinates_y = lattice_coordinates[rand_num, 1]
-        lattice_coordinates_z = lattice_coordinates[rand_num, 2]
-        self.lattice_coordinates_1 = np.hstack((lattice_coordinates_x.reshape(-1,1), lattice_coordinates_y.reshape(-1,1), lattice_coordinates_z.reshape(-1,1)))
+        self.lattice_coordinates_1 = lattice_coordinates[rand_num, :]        
         rand_num = np.random.randint(0,lattice_coordinates.shape[0], self.n_samples)
-        lattice_coordinates_x = lattice_coordinates[rand_num, 0]
-        lattice_coordinates_y = lattice_coordinates[rand_num, 1]
-        lattice_coordinates_z = lattice_coordinates[rand_num, 2]
-        self.lattice_coordinates_2 = np.hstack((lattice_coordinates_x.reshape(-1,1), lattice_coordinates_y.reshape(-1,1), lattice_coordinates_z.reshape(-1,1)))
-        #free up storage 
-        if save == False:
-            rand_num_x = 0
-            rand_num_y = 0
-            rand_num_z = 0
+        self.lattice_coordinates_2 = lattice_coordinates[rand_num, :]
 
 
     def calculate_structure_coordinates(self, save=False):
@@ -100,10 +90,17 @@ class scattering_simulator:
             self.structure_coordinates_1 = self.building_block_coordinates_1 + self.lattice_coordinates_1
             self.structure_coordinates_2 = self.building_block_coordinates_2 + self.lattice_coordinates_2
         else: # different SLD 
-            self.structure_coordinates_1 = self.building_block_coordinates_1[:,:-1] + self.lattice_coordinates_1
-            self.structure_coordinates_2 = self.building_block_coordinates_2[:,:-1] + self.lattice_coordinates_2
-            self.structure_coordinates_1 = np.hstack((self.structure_coordinates_1, self.building_block_coordinates_1[:,-1].reshape(-1,1)))
-            self.structure_coordinates_2 = np.hstack((self.structure_coordinates_2, self.building_block_coordinates_2[:,-1].reshape(-1,1)))
+            if self.lattice_coordinates_1.shape[1] == 3: #no rotation 
+                self.structure_coordinates_1 = self.building_block_coordinates_1[:,:-1] + self.lattice_coordinates_1
+                self.structure_coordinates_2 = self.building_block_coordinates_2[:,:-1] + self.lattice_coordinates_2
+                self.structure_coordinates_1 = np.hstack((self.structure_coordinates_1, self.building_block_coordinates_1[:,-1].reshape(-1,1)))
+                self.structure_coordinates_2 = np.hstack((self.structure_coordinates_2, self.building_block_coordinates_2[:,-1].reshape(-1,1)))
+            else: #rotation of building block included 
+                self.structure_coordinates_1 = self.rotate_building_block(self.building_block_coordinates_1[:,:-1], self.lattice_coordinates_1)
+                self.structure_coordinates_1 = np.hstack((self.structure_coordinates_1, self.building_block_coordinates_1[:,-1].reshape(-1,1)))
+                
+                self.structure_coordinates_2 = self.rotate_building_block(self.building_block_coordinates_2[:,:-1], self.lattice_coordinates_2)
+                self.structure_coordinates_2 = np.hstack((self.structure_coordinates_2, self.building_block_coordinates_2[:,-1].reshape(-1,1)))
 
 
         #find center of structure 
@@ -371,6 +368,72 @@ class scattering_simulator:
         h5f.create_dataset('p_r', data=self.p_r)
         #h5f.create_dataset('structure', data=self.structure_coordinates_1)
         h5f.create_dataset('N', data=self.n_samples)
+
+
+    def rotate_coordinates_y(self, x, z, angle):
+        '''Function to rotate a building block around the y-axis
+        inputs:
+        - x: the x-coordinates of the building block
+        - z: the z-coordinates of the building block
+        - angle: the angle of rotation around the axis
+        outputs:
+        - x_new: the new x-coordinates of the rotated building block
+        - z_new: the new z-coordinates of the rotated building block 
+        '''
+        angle = angle*math.pi/180
+        x_new = x*np.cos(angle) + z*np.sin(angle)
+        z_new = -x*np.sin(angle) + z*np.cos(angle)
+        return x_new, z_new
+
+    def rotate_coordinates_x(self, y, z, angle):
+        '''Function to rotate a building block around the x-axis
+        inputs:
+        - y: the y-coordinates of the building block
+        - z: the z-coordinates of the building block
+        - angle: the angle of rotation around the axis
+        outputs:
+        - y_new: the new y-coordinates of the rotated building block
+        - z_new: the new z-coordinates of the rotated building block 
+        '''
+        angle = angle*math.pi/180
+        y_new = y*np.cos(angle) + z*np.sin(angle)
+        z_new = -y*np.sin(angle) + z*np.cos(angle)
+        return y_new, z_new
+
+    def rotate_coordinates_z(self, x, y, angle):
+        '''Function to rotate a building block around the z-axis
+        inputs:
+        - x: the x-coordinates of the building block
+        - y: the y-coordinates of the building block
+        - angle: the angle of rotation around the axis
+        outputs:
+        - x_new: the new x-coordinates of the rotated building block
+        - y_new: the new y-coordinates of the rotated building block 
+        '''
+        angle = angle*math.pi/180
+        x_new = x*np.cos(angle) + y*np.sin(angle)
+        y_new = -x*np.sin(angle) + y*np.cos(angle)
+        return x_new, y_new
+
+    def rotate_building_block(self, coordinates, center):
+        ''''
+        This function rotates a building block about the x,y,z axis and places them on a specific coordinate.
+        inputs:
+        - coordinates: matrix of building block coordinates with x,y,z in each column
+        - center: matrix of lattice coordinates which is where the building block will be centered at. This is the lattice_coordinates with an extra 3 columns at the end which 
+        account for the amount of rotation around the x,y,z axis needed for the each point of the lattice.
+        outputs:
+        - coordinates: the coordinates of the structure, which is the building block with rotation plus the lattice
+        '''
+        coordinates[:,1], coordinates[:,2] = self.rotate_coordinates_x(coordinates[:,1], coordinates[:,2], center[:,3])
+        coordinates[:,0], coordinates[:,2] = self.rotate_coordinates_y(coordinates[:,0], coordinates[:,2], center[:,4])
+        coordinates[:,0], coordinates[:,1] = self.rotate_coordinates_z(coordinates[:,0], coordinates[:,1], center[:,5])
+        
+        coordinates[:,0] = coordinates[:,0] + center[:,0]
+        coordinates[:,1] = coordinates[:,1] + center[:,1]
+        coordinates[:,2] = coordinates[:,2] + center[:,2]
+        return coordinates
+    
 
 
 

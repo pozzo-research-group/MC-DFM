@@ -31,6 +31,41 @@ def convert_str_to_float(lst):
     array = np.array([float(i) for i in lst])
     return array 
 
+# Using SLD values from periodic table for scattering 
+# https://ncnr.nist.gov/instruments/magik/Periodic.html
+
+# def atom_to_sld(atom):
+#     sld = []
+#     for i in range(len(atom)):
+#         if atom[i][0] == 'H':
+#             sld.append(1.192e-6)
+#         elif atom[i][0] == 'C':
+#             sld.append(17.86e-6)
+#         elif atom[i][0] == 'N':
+#             sld.append(6.884e-6)
+#         elif atom[i][0] == 'O':
+#             sld.append(9.737e-6)
+#         elif atom[i][0] == 'P':
+#             sld.append(15.26e-6)
+#         elif atom[i][0] == 'S':
+#             sld.append(17.90e-6)
+#         else:
+#             if atom[i][1] == 'H':
+#                 sld.append(1.192e-6)
+#             elif atom[i][1] == 'C':
+#                 sld.append(17.86e-6)
+#             elif atom[i][1] == 'N':
+#                 sld.append(6.884e-6)
+#             elif atom[i][1] == 'O':
+#                 sld.append(9.737e-6)
+#             elif atom[i][1] == 'P':
+#                 sld.append(15.26e-6)
+#             elif atom[i][1] == 'S':
+#                 sld.append(17.90e-6)
+#     sld = np.array(sld)
+#     return sld
+
+
 def atom_to_sld(atom):
     sld = []
     for i in range(len(atom)):
@@ -64,6 +99,9 @@ def atom_to_sld(atom):
     sld = np.array(sld) - sld_water
     sld[sld < 0] = 0
     return sld
+
+
+
 
 def load_pdb(filename):
     '''Returns an array where the first 3 columns contain the x,y,z coordinates of the atoms, and the last column contains
