@@ -26,4 +26,4 @@ This method is designed for simulating the small angle scattering curves of larg
 To install the package, simply git clone and follow the example from the notebooks.
 
 ## Requirements 
-This package was written in python with the common libraries: <mark> pandas, numpy, matplotlib, scipy, </mark>. For the full list of libraries see the require.txt file.  
+This package was written in python with the common libraries: <mark> pandas, numpy, matplotlib, scipy, </mark>. For the full list of libraries see the require.txt file. The Python version is 3.9 
