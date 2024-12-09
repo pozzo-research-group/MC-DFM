@@ -1,7 +1,7 @@
 ## Description of the code 
 
 <p align="center">
-  <img src="../Images/Building_block_method.png" width="700" height="500">
+  <img src="../Images/Building_block_method.png" width="700" height="350">
 </p>
 
 
@@ -17,7 +17,7 @@ Scattering Curve of Single Structure
 
 
 <p align="center">
-  <img src="../Images/convolution_method.png" width="700" height="500">
+  <img src="../Images/convolution_method.png" width="700" height="350">
 </p>
 
 
