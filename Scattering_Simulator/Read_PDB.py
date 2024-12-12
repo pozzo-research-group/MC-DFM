@@ -34,45 +34,13 @@ def convert_str_to_float(lst):
 # Using SLD values from periodic table for scattering 
 # https://ncnr.nist.gov/instruments/magik/Periodic.html
 
-# def atom_to_sld(atom):
-#     sld = []
-#     for i in range(len(atom)):
-#         if atom[i][0] == 'H':
-#             sld.append(1.192e-6)
-#         elif atom[i][0] == 'C':
-#             sld.append(17.86e-6)
-#         elif atom[i][0] == 'N':
-#             sld.append(6.884e-6)
-#         elif atom[i][0] == 'O':
-#             sld.append(9.737e-6)
-#         elif atom[i][0] == 'P':
-#             sld.append(15.26e-6)
-#         elif atom[i][0] == 'S':
-#             sld.append(17.90e-6)
-#         else:
-#             if atom[i][1] == 'H':
-#                 sld.append(1.192e-6)
-#             elif atom[i][1] == 'C':
-#                 sld.append(17.86e-6)
-#             elif atom[i][1] == 'N':
-#                 sld.append(6.884e-6)
-#             elif atom[i][1] == 'O':
-#                 sld.append(9.737e-6)
-#             elif atom[i][1] == 'P':
-#                 sld.append(15.26e-6)
-#             elif atom[i][1] == 'S':
-#                 sld.append(17.90e-6)
-#     sld = np.array(sld)
-#     return sld
-
-
 def atom_to_sld(atom):
     sld = []
     for i in range(len(atom)):
         if atom[i][0] == 'H':
             sld.append(1.19e-6)
         elif atom[i][0] == 'C':
-            sld.append(18.71e-6)
+            sld.append(17.86e-6)
         elif atom[i][0] == 'N':
             sld.append(6.88e-6)
         elif atom[i][0] == 'O':
@@ -80,7 +48,7 @@ def atom_to_sld(atom):
         elif atom[i][0] == 'P':
             sld.append(15.26e-6)
         elif atom[i][0] == 'S':
-            sld.append(17.896e-6)
+            sld.append(17.90e-6)
         else:
             if atom[i][1] == 'H':
                 sld.append(1.19e-6)
@@ -93,14 +61,11 @@ def atom_to_sld(atom):
             elif atom[i][1] == 'P':
                 sld.append(15.26e-6)
             elif atom[i][1] == 'S':
-                sld.append(17.896e-6)
-
+                sld.append(17.90e-6)
+    sld = np.array(sld)    
     sld_water = 9.46e-6
     sld = np.array(sld) - sld_water
-    sld[sld < 0] = 0
     return sld
-
-
 
 
 def load_pdb(filename):
