@@ -187,6 +187,9 @@ class scattering_simulator:
             x = np.histogram(self.distances, bins = bins, weights = SLD)
         self.p_r = x[0]
         self.r = x[1][1:]
+        # prevent self sampling which eliminates a "0" distance
+        if self.r[0] == 0:
+            self.p_r[0] = 0
 
     def convert_to_intensity(self, q):
         '''Converts the pairwise distribution function into the scattering intensity as a function of q 
@@ -200,7 +203,7 @@ class scattering_simulator:
         I_q = []
         self.q = q
         for i in range(len(q)):
-            I = (scipy.integrate.simps(4*np.pi*self.p_r*np.sin(q[i]*self.r)/q[i]/self.r, self.r))
+            I = (scipy.integrate.simpson(4*np.pi*self.p_r*np.sin(q[i]*self.r)/q[i]/self.r, self.r))
             I_q.append(I)
         self.I_q = np.array(I_q)
 
@@ -215,7 +218,7 @@ class scattering_simulator:
         - p_r: the pairwise distribution which is a function of (r)'''
         p_r = []
         for i in range(len(r)):
-            p = scipy.integrate.simps(I*q*r[i]*np.sin(q*r[i]), q)
+            p = scipy.integrate.simpson(I*q*r[i]*np.sin(q*r[i]), q)
             p_r.append(p)
         p_r = np.array(p_r)
         return p_r
