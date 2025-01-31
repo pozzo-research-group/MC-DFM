@@ -1,5 +1,6 @@
 ## Description
-The Monte Carlo Distribution Function Method is applied to model the small angle scattering curves of large hierarchical structures. This is useful for many biomolecular assemblies such as protein assemblies or protein crystals. This package includes an efficient and user friendly implementation of the MC-DFM method in python. In addition, the calculation is inexpensive, so it sould be able to run on ordinary laptops. We also show examples where the MC-DFM is combined with a genetic algorithm to fit experimental data and obtain structural parameters from it. 
+The Monte Carlo Distribution Function Method is applied to calculate small angle scattering curves of large hierarchical structures. This is useful for many biomolecular assemblies such as protein assemblies or protein crystals. This package includes an efficient and user friendly implementation of the MC-DFM method in python. In addition, the calculation does not require significant computational resources, so it should be able to run on ordinary laptops. We also show examples where the MC-DFM is combined with a genetic algorithm to fit experimental data and obtain structural parameters from it. Examples on calculating the scattering curves of large hierarchical structures are shown in jupyter notebooks in the Notebook folder in this repository. 
+
 
 <p align="center">
   <img src="Images/RhuA1.png" width="700" height="200">
@@ -18,12 +19,32 @@ At its simplest form, the MC-DFM is similar to the Debye Scattering Equation as 
   <img src="Images/Equations.png" width="700" height="400">
 </p>
 
-## Objective 
-This method is designed for simulating the small angle scattering curves of large structures that cannot be approximated with a geometric model. It works best when the atomic coordinates of a structure is known beforehand or can be constructed like in the case of protein assembly. Correlation peaks are able to be simulated using this method, however caution must be taken in the high-q region of the simulations, due to the presence of artifacts. 
 
+## Paper 
 
+A preprint of the MC-DFM is available online (https://chemrxiv.org/engage/chemrxiv/article-details/679a8c0181d2151a02758fba)
+ 
 ## Installation 
-To install the package, simply git clone and follow the example from the notebooks.
+To install the package, git clone the repository.
+
+
+Create and activate a new environment (powershell for windows):
+
+```
+python -m venv venv
+```
+```
+cd \venv\Scripts
+```
+```
+.\activate 
+```
+
+Go back to the MC-DFM repository and install the package with:
+
+```
+pip install . 
+```
 
 ## Requirements 
-This package was written in python with the common libraries: <mark> pandas, numpy, matplotlib, scipy, </mark>. For the full list of libraries see the require.txt file. The Python version is 3.9 
+This package is written in python. Most of the MC-DFM code is written in Pytorch and can be accelerated with a GPU using the CUDA toolkit. For the full list of libraries used see the require.txt file. The Python version is 3.9 
