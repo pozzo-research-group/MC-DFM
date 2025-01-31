@@ -13,7 +13,7 @@ Instead of calculating the scattering curve directly from the atomic coordinates
   <img src="Images/method.png" width="700" height="200">
 </p>
 
-At its simplest form, the MC-DFM is similar to the Debye Scattering Equation as both contain the sinc function. The MC-DFM method substitutes the double summation in the Debye Equation with a single summation over the number of bins in the pairwise histogram. This allows the MC-DFM to be efficiently applied to larger systems. The hypothesis is that as long as the pairwise distribution function approximates the true pairwise distribution function, the scattering curve calculated by the MC-DFM should be equal to the true scattering curve. This will depend on the number of randomly sampled pairwise distances, but we show that this should not be a limitation for ordinary laptops.  
+At its simplest form, the MC-DFM is similar to the Debye Scattering Equation as both contains a summation of sinc functions. The MC-DFM method substitutes the double summation in the Debye Equation with a single summation over the number of bins in the pairwise histogram. This allows the MC-DFM to be efficiently applied to larger systems. With a large enought sample size, the pairwise distribution function should converge to the true pairwise distribution function, and the scattering curve calculated by the MC-DFM should be equal to the true scattering curve.   
 
 <p align="center">
   <img src="Images/Equations.png" width="700" height="400">
@@ -22,7 +22,7 @@ At its simplest form, the MC-DFM is similar to the Debye Scattering Equation as 
 
 ## Paper 
 
-A preprint of the MC-DFM is available online (https://chemrxiv.org/engage/chemrxiv/article-details/679a8c0181d2151a02758fba)
+A preprint describing the methods used in this repository is available online (https://chemrxiv.org/engage/chemrxiv/article-details/679a8c0181d2151a02758fba)
  
 ## Installation 
 To install the package, git clone the repository.
