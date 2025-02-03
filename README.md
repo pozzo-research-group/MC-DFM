@@ -3,7 +3,7 @@ The Monte Carlo Distribution Function Method is applied to calculate small angle
 
 
 <p align="center">
-  <img src="Images/RhuA1.png" width="700" height="200">
+  <img src="Images/RhuA1.png" width="550" height="200">
 </p>
 
 ## Method
