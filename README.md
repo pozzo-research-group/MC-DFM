@@ -27,6 +27,11 @@ A preprint describing the methods used in this repository is available online (h
 ## Installation 
 To install the package, git clone the repository.
 
+To run the examples with jupyter notebooks, enter the Notebook directory.
+
+```
+cd .\Notebooks\
+```
 
 Create and activate a new environment (powershell for windows):
 
@@ -34,7 +39,7 @@ Create and activate a new environment (powershell for windows):
 python -m venv venv
 ```
 ```
-cd \venv\Scripts
+cd .\venv\Scripts
 ```
 ```
 .\activate 
