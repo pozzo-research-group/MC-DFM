@@ -24,7 +24,7 @@ At its simplest form, the MC-DFM is similar to the Debye Scattering Equation as 
 
 A preprint describing the methods used in this repository is available online (https://chemrxiv.org/engage/chemrxiv/article-details/679a8c0181d2151a02758fba)
  
-## Installation 
+## Installation (for powershell)
 To install the package, git clone the repository.
 
 To run the examples with jupyter notebooks, enter the Notebook directory.
@@ -51,5 +51,30 @@ Go back to the MC-DFM repository and install the package with:
 pip install . 
 ```
 
+## Installation (using miniconda)
+To install the package, git clone the repository.
+
+Then enter the MC-DFM Directory
+
+```
+cd .\MC-DFM\
+```
+
+Create and activate a new environment (miniconda):
+
+```
+conda create -n "mcdfm" python=3.12 ipython 
+```
+
+```
+conda activate mcdfm
+```
+
+Install the package using:
+
+```
+pip install . 
+```
+
 ## Requirements 
-This package is written in python. Most of the MC-DFM code is written in Pytorch and can be accelerated with a GPU using the CUDA toolkit. For the full list of libraries used see the require.txt file. The Python version is 3.9 
+This package is written in python. Most of the MC-DFM code is written in Pytorch and can be accelerated with a GPU using the CUDA toolkit. For the full list of libraries used see the require.txt file. The Python version is 3.12 
