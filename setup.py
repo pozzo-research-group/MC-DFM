@@ -21,6 +21,7 @@ setup(
         'nbformat==5.10.4',
         'torch==2.6.0',
         'ipykernel==6.29.5'
+        'openpyxl==3.1.5'
     ],  # Dependencies to install
     classifiers=[
         "Programming Language :: Python :: 3",
