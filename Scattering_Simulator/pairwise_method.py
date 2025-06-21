@@ -549,7 +549,7 @@ def invariant(data):
     return invariant
 
 
-def calculate_scattering_curve_with_PCB(lattice_coordinates, points, box_length_simulation, histogram_bins, q, sub_box_fraction, plot=False):
+def calculate_scattering_curve_with_PCB(lattice_coordinates, points, box_length_simulation, histogram_bins, q, sub_box_fraction, plot):
     superbox_data = create_superbox_with_orientations(lattice_coordinates, box_length=box_length_simulation)
     plt.rcParams.update({'font.size': 18})
     fig, ax = plt.subplots(figsize=(10,7))
@@ -579,7 +579,6 @@ def calculate_scattering_curve_with_PCB(lattice_coordinates, points, box_length_
             I_q_avg = I_q_avg + I_q_scaled 
     ax.plot(q, I_q_avg, color='k', linewidth = 3)
     data = np.hstack((q.reshape(-1,1), I_q_avg.reshape(-1,1)))
-    plt.show()
     if plot == False:
         plt.close()
     #plt.savefig(path + scattering_curve_plot.png', dpi=600, bbox_inches="tight")
