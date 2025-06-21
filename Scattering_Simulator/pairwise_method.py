@@ -461,3 +461,87 @@ class scattering_simulator:
         coordinates[:, 1] += center[:, 1]
         coordinates[:, 2] += center[:, 2]
         return coordinates
+
+
+
+############################ Functions to scattering curves with periodic boundary conditions #############################
+
+def create_superbox_with_orientations(data, box_length, n_replicas=3):
+    """
+    Replicates a periodic simulation box n_replicas^3 times to form a superbox,
+    preserving orientation vectors.
+
+    Parameters:
+        data (np.ndarray): Array of shape (N, 6) with [x, y, z, ox, oy, oz].
+        box_length (float): Length of the cubic simulation box.
+        n_replicas (int): Number of box copies along each axis (default 3).
+
+    Returns:
+        np.ndarray: Array of shape (N * n_replicas^3, 6) with replicated positions and orientations.
+    """
+    assert data.shape[1] == 6, "Input array must be of shape (N, 6)"
+    
+    positions = data[:, :3]
+    orientations = data[:, 3:]
+    
+    offset_range = np.arange(-(n_replicas // 2), n_replicas // 2 + 1)
+    shifts = np.array(np.meshgrid(offset_range, offset_range, offset_range)).T.reshape(-1, 3)
+    
+    all_data = []
+    for shift in shifts:
+        shift_vector = shift * box_length
+        replicated_positions = positions + shift_vector
+        replicated = np.hstack([replicated_positions, orientations])
+        all_data.append(replicated)
+    
+    return np.vstack(all_data)
+
+
+def extract_subvolume_centered(data, subbox_size, verbose=True):
+    """
+    Extracts a subvolume centered at the geometric center of the superbox,
+    and reports the number of particles in the full and extracted region.
+
+    Parameters:
+        data (np.ndarray): Array of shape (N, 6), with [x, y, z, ox, oy, oz]
+        subbox_size (float or tuple): Size of the subvolume (lx, ly, lz)
+        verbose (bool): Whether to print counts (default True)
+
+    Returns:
+        np.ndarray: Filtered array (M, 6) within the central subvolume
+    """
+    if isinstance(subbox_size, (float, int)):
+        subbox_size = np.array([subbox_size] * 3)
+    else:
+        subbox_size = np.array(subbox_size)
+
+    positions = data[:, :3]
+
+    # Compute bounding box and center of the superbox
+    min_coords = positions.min(axis=0)
+    max_coords = positions.max(axis=0)
+    superbox_center = (min_coords + max_coords) / 2
+
+    # Compute subvolume bounds
+    half_sub = subbox_size / 2
+    lower_bound = superbox_center - half_sub
+    upper_bound = superbox_center + half_sub
+
+    # Create mask for particles inside the subvolume
+    mask = np.all((positions >= lower_bound) & (positions <= upper_bound), axis=1)
+    subvolume = data[mask]
+
+    # Verbose reporting
+    #if verbose:
+    #    print(f"Total particles in superbox: {len(data)}")
+    #    print(f"Particles in subvolume: {len(subvolume)}")
+    proportion = len(subvolume)/len(data)
+    return proportion, subvolume
+
+
+def invariant(data):
+    '''Calculates the invariant'''
+    q = data[:,0]
+    I = data[:,1]
+    invariant = integrate.simpson(q**2*I, q)
+    return invariant
