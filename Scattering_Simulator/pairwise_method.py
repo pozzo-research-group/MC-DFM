@@ -546,3 +546,40 @@ def invariant(data):
     I = data[:,1]
     invariant = integrate.simpson(q**2*I, q)
     return invariant
+
+
+def calculate_scattering_curve_with_PCB(box_length_simulation, histogram_bins, q, sub_box_fraction, plot=False):
+    superbox_data = create_superbox_with_orientations(lattice_coordinates, box_length=box_length_simulation)
+    plt.rcParams.update({'font.size': 18})
+    fig, ax = plt.subplots(figsize=(10,7))
+    for i in range(len(sub_box_fraction)):
+        sub_box_length = box_length_simulation*sub_box_fraction[i]
+        proportion, sub_box = extract_subvolume_centered(superbox_data, sub_box_length)
+        n_samples = 10000000
+        simulator = scattering_simulator(n_samples)
+        simulator.sample_building_block(points)
+        simulator.sample_lattice_coordinates(sub_box)
+        simulator.calculate_structure_coordinates()
+        I_q = simulator.simulate_scattering_curve_fast_lattice(points, sub_box, histogram_bins, q, save=False).numpy()
+        inv_I_q = invariant(np.hstack((q.reshape(-1,1), I_q.reshape(-1,1))))
+        I_q_scaled = I_q/inv_I_q*proportion
+        ax.plot(q, I_q_scaled, linewidth = 3)
+        ax.set_yscale('log')
+        ax.set_xscale('log')
+        ax.set_ylabel('Intensity (arb. unit)')
+        ax.set_xlabel('q ($\\AA^{-1}$)')
+        #plt.legend(fontsize=14)
+        data = np.hstack((q.reshape(-1,1), I_q.reshape(-1,1)))
+        #np.save(path + scattering_curve_' + str(i) + '.npy', data)   
+        print('Simulation of Subbox ', i, '/', len(sub_box_fraction)-1 ,'complete ...')
+        if i == 0:
+            I_q_avg = I_q_scaled
+        else:
+            I_q_avg = I_q_avg + I_q_scaled 
+    ax.plot(q, I_q_avg, color='k', linewidth = 3)
+    data = np.hstack((q.reshape(-1,1), I_q_avg.reshape(-1,1)))
+    plt.show()
+    if plot == False:
+        plt.close()
+    #plt.savefig(path + scattering_curve_plot.png', dpi=600, bbox_inches="tight")
+    return data 
