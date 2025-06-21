@@ -1,6 +1,7 @@
 import torch
 import numpy as np 
 from scipy import integrate
+import matplotlib.pyplot as plt
 
 class scattering_simulator:
     def __init__(self, n_samples, device=None):
