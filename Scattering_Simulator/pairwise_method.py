@@ -2,6 +2,7 @@ import torch
 import numpy as np 
 from scipy import integrate
 import matplotlib.pyplot as plt
+from scipy.optimize import lsq_linear
 
 class scattering_simulator:
     def __init__(self, n_samples, device=None):
@@ -550,6 +551,7 @@ def invariant(data):
 
 
 def calculate_scattering_curve_with_PCB(lattice_coordinates, points, box_length_simulation, histogram_bins, q, sub_box_fraction, plot):
+    scattering_curves = [] 
     superbox_data = create_superbox_with_orientations(lattice_coordinates, box_length=box_length_simulation)
     plt.rcParams.update({'font.size': 18})
     fig, ax = plt.subplots(figsize=(10,7))
@@ -563,23 +565,103 @@ def calculate_scattering_curve_with_PCB(lattice_coordinates, points, box_length_
         simulator.calculate_structure_coordinates()
         I_q = simulator.simulate_scattering_curve_fast_lattice(points, sub_box, histogram_bins, q, save=False).numpy()
         inv_I_q = invariant(np.hstack((q.reshape(-1,1), I_q.reshape(-1,1))))
-        I_q_scaled = I_q/inv_I_q*proportion
+        I_q_scaled = I_q/inv_I_q*proportion 
         ax.plot(q, I_q_scaled, linewidth = 3)
         ax.set_yscale('log')
         ax.set_xscale('log')
         ax.set_ylabel('Intensity (arb. unit)')
         ax.set_xlabel('q ($\\AA^{-1}$)')
+        if plot == False:
+            plt.close()
         #plt.legend(fontsize=14)
         data = np.hstack((q.reshape(-1,1), I_q.reshape(-1,1)))
         #np.save(path + scattering_curve_' + str(i) + '.npy', data)   
         print('Simulation of Subbox ', i, '/', len(sub_box_fraction)-1 ,'complete ...')
-        if i == 0:
-            I_q_avg = I_q_scaled
-        else:
-            I_q_avg = I_q_avg + I_q_scaled 
-    ax.plot(q, I_q_avg, color='k', linewidth = 3)
-    data = np.hstack((q.reshape(-1,1), I_q_avg.reshape(-1,1)))
-    if plot == False:
-        plt.close()
-    #plt.savefig(path + scattering_curve_plot.png', dpi=600, bbox_inches="tight")
-    return data 
+        scattering_curves.append(I_q_scaled)
+    return scattering_curves
+
+def fit_subbox_saxs_to_power_law(q, Iq_list, qmin_fit, qmax_fit, power=-4, plot=False):
+    """
+    Fit a linear combination of SAXS curves to a power-law envelope q^power
+    over a specified q-range using non-negative least squares, and properly
+    scale the reference power-law to match the fitted result in the fit region.
+    
+    Parameters:
+        q (np.ndarray): 1D array of q-values.
+        Iq_list (List[np.ndarray]): List of 1D arrays of I(q) values for each sub-box.
+        qmin_fit (float): Minimum q to use in fitting range.
+        qmax_fit (float): Maximum q to use in fitting range.
+        power (float): Power-law exponent to fit to (default: -4).
+        plot (bool): Whether to show a plot of the fit.
+
+    Returns:
+        weights (np.ndarray): Weights for each I(q) curve.
+        Iq_fit (np.ndarray): Fitted linear combination of I(q) curves.
+        scaled_power_law (np.ndarray): Scaled power-law curve matching in fit region.
+    """
+    # Validate inputs
+    assert isinstance(q, np.ndarray) and q.ndim == 1, "q must be a 1D array"
+    assert all(len(Iq) == len(q) for Iq in Iq_list), "Each I(q) must match q length"
+
+    # Select q-range
+    fit_mask = (q >= qmin_fit) & (q <= qmax_fit)
+    if np.count_nonzero(fit_mask) == 0:
+        raise ValueError("No q-values found in the specified qmin/qmax range.")
+
+    q_fit = q[fit_mask]
+    Iq_array = np.vstack(Iq_list)            # shape: (n_curves, len(q))
+    Iq_fit_region = Iq_array[:, fit_mask]    # shape: (n_curves, len(q_fit))
+
+    # Target power-law vector for fitting
+    target = q_fit ** power
+    target /= np.max(np.abs(target))  # normalize for stability
+
+    # Solve non-negative least squares
+    A = Iq_fit_region.T
+    result = lsq_linear(A, target, bounds=(0, np.inf))
+    weights = result.x
+
+    # Reconstruct full I(q)
+    Iq_fit = np.dot(weights, Iq_array)
+
+    # Compute scaled power-law reference to match Iq_fit in the q-fit region
+    q_power_raw = q ** power
+    q_power_ref = q_power_raw.copy()
+
+    # Scale power law to best match Iq_fit within the fit range
+    scale_region = Iq_fit[fit_mask]
+    scale_factor = np.dot(scale_region, q_power_raw[fit_mask]) / np.dot(q_power_raw[fit_mask], q_power_raw[fit_mask])
+    scaled_power_law = q_power_ref * scale_factor
+
+    # Plotting
+    if plot == True:
+        plt.figure(figsize=(7, 6))
+        plt.loglog(q, Iq_fit, label="Fitted weighted sum", lw=2)
+        plt.loglog(q, scaled_power_law, '--', label=f"Scaled $q^{{{power}}}$")
+        plt.axvspan(qmin_fit, qmax_fit, color='gray', alpha=0.2, label="Fit range")
+        plt.xlabel("q (Å⁻¹)")
+        plt.ylabel("I(q)")
+        plt.title("Power-law fit of weighted sub-box SAXS curves")
+        plt.legend()
+        plt.grid(True, which='both', ls='--', alpha=0.5)
+        plt.tight_layout()
+        #plt.savefig('plot.png', dpi=600, bbox_inches="tight")
+
+    return weights, Iq_fit, scaled_power_law
+
+def cube_form_factor(q, a):
+    """
+    Calculate the normalized SAXS form factor I(q) for a cube of edge length a.
+
+    Parameters:
+        q (np.ndarray): Array of q-values (Å⁻¹).
+        a (float): Edge length of the cube (Å).
+
+    Returns:
+        np.ndarray: Scattering intensity I(q) for the cube.
+    """
+    qa = q * a / 2
+    # Avoid division by zero using np.where
+    sinc = np.where(qa == 0, 1.0, np.sin(qa) / qa)
+    Iq = sinc**6
+    return Iq
