@@ -24,7 +24,7 @@ At its simplest form, the MC-DFM is similar to the Debye Scattering Equation as 
 
 A preprint describing the methods used in this repository is available online: (https://chemrxiv.org/engage/chemrxiv/article-details/679a8c0181d2151a02758fba)
 
-A final peer reviewed publication of this work is also available online: (https://onlinelibrary.wiley.com/doi/abs/10.1107/S1600576725003267)
+A final peer reviewed publication of this work is also available online: (https://journals.iucr.org/paper?uu5014)
  
 ## Installation (for powershell)
 To install the package, git clone the repository.
