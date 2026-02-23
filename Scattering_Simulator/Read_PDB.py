@@ -34,7 +34,43 @@ def convert_str_to_float(lst):
 # Using SLD values from periodic table for scattering 
 # https://ncnr.nist.gov/instruments/magik/Periodic.html
 
+def atom_to_sld_SANS(atom):
+    '''These values are for neutrons'''
+    sld = []
+    for i in range(len(atom)):
+        if atom[i][0] == 'H':
+            sld.append(2e-6)
+        elif atom[i][0] == 'C':
+            sld.append(2e-6)
+        elif atom[i][0] == 'N':
+            sld.append(2e-6)
+        elif atom[i][0] == 'O':
+            sld.append(2e-6)
+        elif atom[i][0] == 'P':
+            sld.append(2e-6)
+        elif atom[i][0] == 'S':
+            sld.append(2e-6)
+        else:
+            if atom[i][1] == 'H':
+                sld.append(2e-6)
+            elif atom[i][1] == 'C':
+                sld.append(2e-6)
+            elif atom[i][1] == 'N':
+                sld.append(2e-6)
+            elif atom[i][1] == 'O':
+                sld.append(2e-6)
+            elif atom[i][1] == 'P':
+                sld.append(2e-6)
+            elif atom[i][1] == 'S':
+                sld.append(2e-6)
+    sld = np.array(sld)    
+    sld_D2O = 6.35e-6
+    sld = np.array(sld) - sld_D2O
+    return sld
+
+
 def atom_to_sld(atom):
+    '''These values are for X-rays'''
     sld = []
     for i in range(len(atom)):
         if atom[i][0] == 'H':
@@ -68,6 +104,7 @@ def atom_to_sld(atom):
     return sld
 
 
+
 def load_pdb(filename):
     '''Returns an array where the first 3 columns contain the x,y,z coordinates of the atoms, and the last column contains
        the SLD of the atoms'''
@@ -82,6 +119,23 @@ def load_pdb(filename):
     sld = atom_to_sld(atom)
     coordinates = np.hstack((x_pos.reshape(-1,1), y_pos.reshape(-1,1), z_pos.reshape(-1,1), sld.reshape(-1,1)))
     return coordinates
+
+
+def load_pdb_SANS(filename):
+    '''Returns an array where the first 3 columns contain the x,y,z coordinates of the atoms, and the last column contains
+       the SLD of the atoms'''
+    atom, x_pos, y_pos, z_pos = open_file(filename)
+    atom = remove_spaces(atom)
+    x_pos = remove_spaces(x_pos)
+    y_pos = remove_spaces(y_pos)
+    z_pos = remove_spaces(z_pos)
+    x_pos = convert_str_to_float(x_pos)
+    y_pos = convert_str_to_float(y_pos)
+    z_pos = convert_str_to_float(z_pos)
+    sld = atom_to_sld_SANS(atom)
+    coordinates = np.hstack((x_pos.reshape(-1,1), y_pos.reshape(-1,1), z_pos.reshape(-1,1), sld.reshape(-1,1)))
+    return coordinates
+
 
 def export_PDB(coordinates, dir):
     '''Creates a PDB style file in a txt format'''
@@ -103,3 +157,39 @@ def export_PDB(coordinates, dir):
     file = np.hstack((col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11, col12, col13, col3))
     np.savetxt(dir, file,  fmt="%s") #save merged data as npy 
     return file
+
+
+def read_DAT_file(name):
+    '''reads DAT files which are files from the Xenocs SAXS instrument
+    input: the file path
+    output: an array with q, I, and dI as the columns'''
+
+    with open(name) as pdbfile:
+        q = []
+        I = []
+        dI = []
+        dq = []
+        start = 10000
+        for i,line in enumerate(pdbfile):
+            if 'q(A-1)' in line:
+                start = i
+            if i > start: 
+                splitted_line = [line[0:15], line[15:40], line[45:100], line[39:]]
+                try:
+                    q.append(float(splitted_line[0]))
+                    I.append(float(splitted_line[1]))
+                    dI.append(float(splitted_line[2]))
+                    dq.append(float(splitted_line[3]))
+                    
+                    #float(splitted_line[2])
+                    #q.append(splitted_line[0])
+                    #I.append(splitted_line[1])
+                    #dI.append(splitted_line[2]) 
+                except:
+                    a = 1
+        q = np.array([float(i) for i in q]).reshape(-1,1)
+        I = np.array([float(i) for i in I]).reshape(-1,1)
+        dI = np.array([float(i) for i in dI]).reshape(-1,1)
+        #dq = np.array([float(i) for i in dq]).reshape(-1,1)
+        data = np.hstack((q, I, dI))
+    return data
