@@ -20,12 +20,26 @@ At its simplest form, the MC-DFM is similar to the Debye Scattering Equation as 
 </p>
 
 
-## Paper 
+## Publications 
 
-A preprint describing the methods used in this repository is available online: (https://chemrxiv.org/engage/chemrxiv/article-details/679a8c0181d2151a02758fba)
+Further details on the methods used in this work can be found in the following publication:
 
-A final peer reviewed publication of this work is also available online: (https://journals.iucr.org/paper?uu5014)
- 
+1. [Efficient analysis of small-angle scattering curves for large biomolecular assemblies using Monte Carlo methods]
+
+	[![arXiv](https://img.shields.io/badge/arXiv-2025.zktwx-b31b1b.svg)](https://chemrxiv.org/engage/chemrxiv/article-details/679a8c0181d2151a02758fba) [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://journals.iucr.org/paper?uu5014)	
+
+The algorithm developed in this work has been used to analyze experimental small-angle scattering data of large protein assemblies in the following publications:
+
+1. [Design of light-and chemically responsive protein assemblies through host-guest interactions]
+
+	[![arXiv](https://img.shields.io/badge/arXiv-2025.zktwx-b31b1b.svg)](https://www.osti.gov/pages/servlets/purl/2558143) [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://www.cell.com/chem/abstract/S2451-9294(24)00652-1)	
+
+2. [Bond-centric modular design of protein assemblies]
+
+	[![arXiv](https://img.shields.io/badge/arXiv-2025.zktwx-b31b1b.svg)](https://www.biorxiv.org/content/10.1101/2024.10.11.617872v1) [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://www.nature.com/articles/s41563-025-02297-5)	
+
+
+
 ## Installation (for powershell)
 To install the package, git clone the repository.
 
