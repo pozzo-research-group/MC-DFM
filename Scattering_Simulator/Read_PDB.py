@@ -39,30 +39,30 @@ def atom_to_sld_SANS(atom):
     sld = []
     for i in range(len(atom)):
         if atom[i][0] == 'H':
-            sld.append(2e-6)
+            sld.append(3.28e-6)
         elif atom[i][0] == 'C':
-            sld.append(2e-6)
+            sld.append(3.28e-6)
         elif atom[i][0] == 'N':
-            sld.append(2e-6)
+            sld.append(3.28e-6)
         elif atom[i][0] == 'O':
-            sld.append(2e-6)
+            sld.append(3.28e-6)
         elif atom[i][0] == 'P':
-            sld.append(2e-6)
+            sld.append(3.28e-6)
         elif atom[i][0] == 'S':
-            sld.append(2e-6)
+            sld.append(3.28e-6)
         else:
             if atom[i][1] == 'H':
-                sld.append(2e-6)
+                sld.append(3.28e-6)
             elif atom[i][1] == 'C':
-                sld.append(2e-6)
+                sld.append(3.28e-6)
             elif atom[i][1] == 'N':
-                sld.append(2e-6)
+                sld.append(3.28e-6)
             elif atom[i][1] == 'O':
-                sld.append(2e-6)
+                sld.append(3.28e-6)
             elif atom[i][1] == 'P':
-                sld.append(2e-6)
+                sld.append(3.28e-6)
             elif atom[i][1] == 'S':
-                sld.append(2e-6)
+                sld.append(3.28e-6)
     sld = np.array(sld)    
     sld_D2O = 6.35e-6
     sld = np.array(sld) - sld_D2O
