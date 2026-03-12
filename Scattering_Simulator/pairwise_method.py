@@ -71,13 +71,13 @@ class scattering_simulator:
             if self.lattice_coordinates_1.shape[1] == 3:
                 self.structure_coordinates_1 = self.building_block_coordinates_1[:, :-1] + self.lattice_coordinates_1
                 self.structure_coordinates_2 = self.building_block_coordinates_2[:, :-1] + self.lattice_coordinates_2
-                self.structure_coordinates_1 = torch.cat((self.structure_coordinates_1, self.building_block_coordinates_1[:, -1:].reshape(-1, 1)), dim=1)
-                self.structure_coordinates_2 = torch.cat((self.structure_coordinates_2, self.building_block_coordinates_2[:, -1:].reshape(-1, 1)), dim=1)
+                self.structure_coordinates_1 = torch.cat((self.structure_coordinates_1, self.building_block_coordinates_1[:, -1].reshape(-1, 1)), dim=1)
+                self.structure_coordinates_2 = torch.cat((self.structure_coordinates_2, self.building_block_coordinates_2[:, -1].reshape(-1, 1)), dim=1)
             else:
                 self.structure_coordinates_1 = self.rotate_building_block(self.building_block_coordinates_1[:, :-1], self.lattice_coordinates_1)
-                self.structure_coordinates_1 = torch.cat((self.structure_coordinates_1, self.building_block_coordinates_1[:, -1:].reshape(-1, 1)), dim=1)
+                self.structure_coordinates_1 = torch.cat((self.structure_coordinates_1, self.building_block_coordinates_1[:, -1].reshape(-1, 1)), dim=1)
                 self.structure_coordinates_2 = self.rotate_building_block(self.building_block_coordinates_2[:, :-1], self.lattice_coordinates_2)
-                self.structure_coordinates_2 = torch.cat((self.structure_coordinates_2, self.building_block_coordinates_2[:, -1:].reshape(-1, 1)), dim=1)
+                self.structure_coordinates_2 = torch.cat((self.structure_coordinates_2, self.building_block_coordinates_2[:, -1].reshape(-1, 1)), dim=1)
 
         if not save:
             self.lattice_coordinates_1 = None
@@ -133,18 +133,22 @@ class scattering_simulator:
             self.lattice_coordinates_2 = None
 
     def relative_coordinates(self, building_block_coordinates):
-        '''Used to center the building block coordinates to have a center at coordinates (0,0,0).
-        
+        '''Used to center the building block coordinates to have a center at coordinates (0,0,0)
         inputs:
-        - building_block_coordinates: an array of the x-y-z coordinates of the building block. The array
-        should have 3 columns and any number of rows.
-        
+        - building_block_coordinates_centered: an array of the x-y-z coordinates of the building block. The array
+        should have 3 columns and any number of rows 
         outputs:
         - building_block_coordinates_centered: an array of the x-y-z coordinates of the building block with a center
-        at point (0,0,0).'''
-        building_block_coordinates = self.to_tensor(building_block_coordinates)
-        rel_coords = building_block_coordinates - building_block_coordinates.mean(dim=0, keepdim=True)
-        return rel_coords
+        at point (0,0,0)
+        '''
+        rel_x = building_block_coordinates[:,0] - np.mean(building_block_coordinates[:,0])
+        rel_y = building_block_coordinates[:,1] - np.mean(building_block_coordinates[:,1])
+        rel_z = building_block_coordinates[:,2] - np.mean(building_block_coordinates[:,2])
+        if building_block_coordinates.shape[1] == 3: #uniform SLD 
+            building_block_coordinates_centered = np.hstack((rel_x.reshape(-1,1), rel_y.reshape(-1,1), rel_z.reshape(-1,1)))
+        else: #difference in SLD
+            building_block_coordinates_centered = np.hstack((rel_x.reshape(-1,1), rel_y.reshape(-1,1), rel_z.reshape(-1,1), building_block_coordinates[:,3].reshape(-1,1)))
+        return torch.tensor(building_block_coordinates_centered)
 
 
     def distance_function(self, save):
@@ -158,23 +162,33 @@ class scattering_simulator:
         - self.distances: a 1D array of the pairwise distances of the two randomly sampled arrays of the structure coordinates.'''
         p1 = self.structure_coordinates_1
         p2 = self.structure_coordinates_2
-        self.distances = torch.sqrt(((p1 - p2)**2).sum(dim=1))
+        self.distances = torch.sqrt((p1[:,0] - p2[:,0])**2 + (p1[:,1] - p2[:,1])**2 + (p1[:,2] - p2[:,2])**2)
 
 
     def create_histogram(self, bins):
-        '''Creates a histogram of the pairwise distances between two randomly selected points from the structure coordinates.
+        '''Creates a histogram of the pairwise distances between two randomly selected points from the structure coordinates
         
         inputs:
         - bins: number of bins for the histogram
-        - self.distances: a 1D array of the pairwise distances of the two randomly sampled arrays of the structure coordinates
+        - self.distances: a 1D tensor of the pairwise distances of the two randomly sampled arrays of the structure coordinates
         
         results:
         - self.p_r: the pairwise distribution function  
-        - self.r: the pairwise distances of the two randomly sampled coordinates of the structure.'''
-        hist = torch.histc(self.distances, bins=bins, min=0.0, max=self.distances.max())
-        self.p_r = hist
-        self.r = torch.linspace(0, self.distances.max(), steps=bins, device=self.device)
+        - self.r: the pairwise distances of the two randomly sampled coordinates of the structure
+        '''
 
+        if self.structure_coordinates_1.shape[1] == 3:
+            hist, edges = torch.histogram(self.distances, bins=bins)
+        else:
+            SLD = self.structure_coordinates_1[:, -1] * self.structure_coordinates_2[:, -1]
+            hist, edges = torch.histogram(self.distances, bins=bins, weight=SLD)
+
+        self.p_r = hist
+        self.r = edges[1:]
+
+        # prevent self sampling which eliminates a "0" distance
+        if self.r[0] == 0:
+            self.p_r[0] = 0
 
     def convert_to_intensity(self, q):
         '''Converts the pairwise distribution function into the scattering intensity as a function of q. 
