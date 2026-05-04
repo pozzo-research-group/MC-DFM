@@ -39,7 +39,10 @@ The algorithm developed in this work has been used to analyze experimental small
 
 2. Bond-centric modular design of protein assemblies
 
-	[![arXiv](https://img.shields.io/badge/arXiv-2025.zktwx-b31b1b.svg)](https://www.biorxiv.org/content/10.1101/2024.10.11.617872v1) [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://www.nature.com/articles/s41563-025-02297-5)	
+	[![arXiv](https://img.shields.io/badge/arXiv-2025.zktwx-b31b1b.svg)](https://www.biorxiv.org/content/10.1101/2024.10.11.617872v1) [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://www.nature.com/articles/s41563-025-02297-5)
+
+3. Role of Polymer-Protein Interactions in the Dynamics of Polymer-Integrated Protein Crystals 
+  [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://pubs.acs.org/doi/full/10.1021/jacs.6c02182)	
 
 
 
