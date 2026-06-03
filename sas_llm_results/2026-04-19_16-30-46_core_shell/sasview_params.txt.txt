@@ -1,0 +1,10 @@
+sasview_parameter_values
+model_name,core_shell_sphere
+scale,True,26794,7.8117e-05,0.0,inf,()
+background,False,0,,-inf,inf,()
+core_shell_sphere,None,,,,,()
+radius,False,30,,0.0,inf,()
+thickness,False,15,,0.0,inf,()
+sld_core,False,5,,-inf,inf,()
+sld_shell,False,3,,-inf,inf,()
+sld_solvent,False,0,,-inf,inf,()

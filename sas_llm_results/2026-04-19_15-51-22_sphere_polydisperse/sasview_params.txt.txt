@@ -1,0 +1,9 @@
+sasview_parameter_values
+model_name,sphere
+scale,True,260.7,1.0962e-05,0.0,inf,()
+background,False,0,,-inf,inf,()
+sphere,None,,,,,()
+sld,False,1,,-inf,inf,()
+sld_solvent,False,6,,-inf,inf,()
+radius,False,50,,0.0,inf,()
+radius.width,False,0.5,,0.0,1.0,35,3,gaussian

@@ -1,0 +1,1 @@
+Simulate the scattering of three cubes of 10 nm in edge length that are assembeled into a linear line where the faces of the cubes are touching each other.

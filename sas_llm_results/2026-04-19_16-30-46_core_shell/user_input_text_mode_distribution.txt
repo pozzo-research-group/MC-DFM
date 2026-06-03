@@ -1,0 +1,1 @@
+Simulate the scattering of a core shell sphere that has a core radius of 30 angstrom and a shell thickness of 15 angstrom. The SLD contrast of the core is 5 and the shell is 3.

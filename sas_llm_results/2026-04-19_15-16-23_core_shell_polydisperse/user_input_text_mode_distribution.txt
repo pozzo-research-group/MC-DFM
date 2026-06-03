@@ -1,0 +1,1 @@
+Simulate the scattering of a polydisperse mixture of core shell spheres that has a polydisperse core radius of 30 angstrom modeled by a gaussian distribution with a standard deviation of 15 angstrom and a constant shell thickness of 15 angstrom. The SLD difference of the core is 5 and the shell is 3.

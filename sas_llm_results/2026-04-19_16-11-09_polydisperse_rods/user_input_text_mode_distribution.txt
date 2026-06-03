@@ -1,0 +1,1 @@
+Simulate the scattering of a cylinder of 200 angstrom in length and 20 angstrom in radius. Add polydispersity modeled by a normal distribution in the cylinder radius with mean of 20 angstrom and standard deviation of 10 angstrom.

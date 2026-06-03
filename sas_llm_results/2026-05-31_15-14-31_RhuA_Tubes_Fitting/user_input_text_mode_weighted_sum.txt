@@ -1,0 +1,1 @@
+Write a script that is used to fit experimental saxs data with simulated data loaded from text files. Process the simulated data to have the same q values as the experimental data. Fit the weighted sum of the simulated fits plus a scale parameter. 
