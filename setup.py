@@ -11,17 +11,21 @@ setup(
     url="https://github.com/pozzo-research-group/MC-DFM/tree/main",  # Project URL
     packages=find_packages(),  # Automatically find sub-packages
     install_requires=[
-        'matplotlib==3.10.0',
-        'numpy==2.2.2',
+        'matplotlib==3.10.8',
+        'numpy==2.3.0',
         'pandas==2.2.3',
         'scikit-learn==1.6.1',
         'scipy==1.15.1',
         'plotly==6.0.0',
         'h5py==3.12.1',
         'nbformat==5.10.4',
-        'torch==2.6.0',
+        'torch==2.8.0',
         'ipykernel==6.29.5',
-        'openpyxl==3.1.5'
+        'openpyxl==3.1.5',
+        'openai==2.24.0',
+        'openai-agents==0.10.2',
+        'agapi==2025.11.15',
+        'gsd==3.4.2'
     ],  # Dependencies to install
     classifiers=[
         "Programming Language :: Python :: 3",

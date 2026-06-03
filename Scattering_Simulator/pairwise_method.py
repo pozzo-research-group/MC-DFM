@@ -679,3 +679,120 @@ def cube_form_factor(q, a):
     sinc = np.where(qa == 0, 1.0, np.sin(qa) / qa)
     Iq = sinc**6
     return Iq
+
+
+def generate_coordinates_for_polydisperse_system(size_of_object):
+    """
+    Generate coordinates for a simple cubic crystal lattice.
+
+    Parameters:
+        spacing (float): Distance between lattice points.
+        size (tuple of ints): Number of points in (nx, ny, nz).
+        displacement (float): Max random displacement added to each coordinate.
+        seed (int or None): Random seed for reproducibility.
+
+    Returns:
+        numpy.ndarray: Array of shape (N, 3) with xyz coordinates.
+    """
+    spacing = size_of_object*4
+    size=(6, 6, 6)
+    displacement=spacing/3
+
+    nx, ny, nz = size
+    points = []
+
+    for i in range(nx):
+        for j in range(ny):
+            for k in range(nz):
+                # Base lattice position
+                x = i * spacing
+                y = j * spacing
+                z = k * spacing
+
+                # Add random displacement in range [-d, d]
+                dx, dy, dz = np.random.uniform(-displacement, displacement, 3)
+
+                points.append([x + dx, y + dy, z + dz])
+
+    return np.array(points)
+
+
+
+def place_objects_on_coordinates(lattice_coords, objects, proportions, seed=None):
+    """
+    Place arbitrary objects onto lattice points based on given proportions.
+
+    Parameters:
+        lattice_coords (ndarray): (N, 3) array of lattice positions
+        objects (list of ndarray): list of arrays, each (Mi, 3), centered at origin
+        proportions (list or array): list of probabilities for each object type
+        seed (int or None): random seed
+
+    Returns:
+        ndarray: (K, 3) array of all coordinates in the system
+    """
+    if seed is not None:
+        np.random.seed(seed)
+
+    proportions = np.array(proportions, dtype=float)
+    proportions = proportions / proportions.sum()  # normalize
+
+    num_sites = len(lattice_coords)
+    num_types = len(objects)
+
+    if len(proportions) != num_types:
+        raise ValueError("Length of proportions must match number of objects")
+
+    # Assign an object type to each lattice site
+    choices = np.random.choice(num_types, size=num_sites, p=proportions)
+
+    all_coords = []
+
+    for idx, lattice_point in enumerate(lattice_coords):
+        obj = objects[choices[idx]]
+
+        # Translate object to lattice position
+        translated = obj[:,0:3] + lattice_point
+        # random_angles = obj[:,0:3].copy()
+        # np.random.shuffle(random_angles)
+        # translated = np.hstack((translated, random_angles))
+        if obj.shape[1] == 4:
+            translated = np.hstack((translated, obj[:,-1].reshape(-1,1)))
+        all_coords.append(translated)
+
+    return np.vstack(all_coords)
+
+def generate_sphere(diameter, spacing=0.8, center=(0, 0, 0)):
+    """
+    Generate coordinates for a solid sphere using a 3D grid.
+
+    Parameters:
+        diameter (float): Diameter of the sphere
+        spacing (float): Distance between points (resolution)
+        center (tuple): Center of the sphere (x, y, z)
+
+    Returns:
+        ndarray: (N, 3) array of xyz coordinates inside the sphere
+    """
+    radius = diameter / 2.0
+    cx, cy, cz = center
+
+    # Create grid bounding the sphere
+    x = np.arange(-radius, radius + spacing, spacing)
+    y = np.arange(-radius, radius + spacing, spacing)
+    z = np.arange(-radius, radius + spacing, spacing)
+
+    xx, yy, zz = np.meshgrid(x, y, z, indexing='ij')
+
+    # Flatten grid
+    points = np.vstack([xx.ravel(), yy.ravel(), zz.ravel()]).T
+
+    # Keep only points inside the sphere
+    distances = np.sqrt(points[:, 0]**2 + points[:, 1]**2 + points[:, 2]**2)
+    sphere_points = points[distances <= radius]
+
+    # Shift to desired center
+    sphere_points += np.array(center)
+
+    return sphere_points
+

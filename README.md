@@ -1,8 +1,15 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/pozzo-research-group/MC-DFM)
 
 ## Description
-The Monte Carlo Distribution Function Method is applied to calculate small angle scattering curves of large hierarchical structures. This is useful for many biomolecular assemblies such as protein assemblies or protein crystals. This package includes an efficient and user friendly implementation of the MC-DFM method in python. In addition, the calculation does not require significant computational resources, so it should be able to run on ordinary laptops. We also show examples where the MC-DFM is combined with a genetic algorithm to fit experimental data and obtain structural parameters from it. Examples on calculating the scattering curves of large hierarchical structures are shown in jupyter notebooks in the Notebook folder in this repository. 
+MC-DFM is a Python package for computing small-angle X-ray and neutron scattering (SAXS/SANS) curves of large hierarchical structures using the **Monte Carlo Distribution Function Method**. It is designed for systems too large for the direct Debye equation — such as protein crystals, protein tubes and sheets, nanoparticle superlattices, and fractal aggregates — while remaining fast enough to run on an ordinary laptop. GPU acceleration is supported via PyTorch when a CUDA device is available.
 
+The package provides three main capabilities:
+
+1. **Scattering simulation** — compute theoretical scattering curves from atomic coordinates (PDB files) or user-defined geometric models (spheres, cylinders, core-shell particles, rods, cubes, etc.)
+2. **Hierarchical assembly modeling** — model large periodic or aperiodic structures using a building-block + lattice convolution approach, enabling efficient simulation of crystals, tubes, and other assemblies without explicitly enumerating every atom pair
+3. **Curve fitting** — fit simulated curves to experimental data using a genetic algorithm optimizer to extract structural parameters
+
+An additional **LLM interface** (`sas_llm/`) allows users to describe a scattering system in natural language and automatically generate the corresponding simulation script, using the AtomGPT API.
 
 <p align="center">
   <img src="Images/RhuA1.png" width="550" height="350">
@@ -10,17 +17,30 @@ The Monte Carlo Distribution Function Method is applied to calculate small angle
 
 
 ## Method
-Instead of calculating the scattering curve directly from the atomic coordinates, the MC-DFM first calculates the pairwise distribution function, which is a histogram of the pairwise distances of the atoms. This is done by randomly sampling the atomic coordinates and calculating the euclidean distance between them. By coding this step entirely with matrix operations, the pairwise distribution function can quickly and efficiently be calculated. 
+Instead of computing scattering directly from all atom pairs (as in the Debye equation), the MC-DFM randomly samples pairs of atomic coordinates and accumulates their pairwise distances into a histogram — the pair distribution function (PDF). The scattering intensity is then computed from the PDF via a single summation of sinc functions. All pairwise distance calculations are implemented as matrix operations in PyTorch, making the method both fast and scalable.
 
 <p align="center">
   <img src="Images/method.png" width="700" height="200">
 </p>
 
-At its simplest form, the MC-DFM is similar to the Debye Scattering Equation as both contains a summation of sinc functions. The MC-DFM method substitutes the double summation in the Debye Equation with a single summation over the number of bins in the pairwise histogram. This allows the MC-DFM to be efficiently applied to larger systems. With a large enought sample size, the pairwise distribution function should converge to the true pairwise distribution function, and the scattering curve calculated by the MC-DFM should be equal to the true scattering curve.   
+For hierarchical structures (e.g., a protein crystal), the method separates the building block from the lattice. Random samples are drawn independently from the building block coordinates and the lattice positions, combined via translation and rotation, and then used to compute the pair distribution function. This avoids explicitly constructing the full atomic model of the assembly.
 
 <p align="center">
   <img src="Images/Equations.png" width="700" height="400">
 </p>
+
+
+## Repository Structure
+
+| Directory | Contents |
+|---|---|
+| `Scattering_Simulator/` | Core MC-DFM implementation (PyTorch), PDB reader, genetic algorithm fitting |
+| `genetic_algorithm/` | Standalone genetic algorithm for curve fitting |
+| `sas_llm/` | LLM interface for generating simulation scripts from natural language |
+| `Notebooks/` | Jupyter notebook examples covering proteins, nanoparticles, HOOMD simulations, and experimental data fitting |
+| `sas_llm_results/` | Saved outputs from LLM-generated simulation runs |
+| `Data/` | Experimental and simulated scattering data, PDB files, HOOMD trajectories |
+| `LLM Examples/` | Notebooks demonstrating the LLM interface |
 
 
 ## Publications 
@@ -46,57 +66,59 @@ The algorithm developed in this work has been used to analyze experimental small
 
 
 
-## Installation (for powershell)
-To install the package, git clone the repository.
+## Installation
 
-To run the examples with jupyter notebooks, enter the Notebook directory.
+Clone the repository and enter the directory:
 
 ```
-cd .\Notebooks\
+git clone https://github.com/pozzo-research-group/MC-DFM.git
+cd MC-DFM
 ```
 
-Create and activate a new environment (powershell for windows):
+### Option 1: venv (PowerShell)
+
+Create and activate a virtual environment:
 
 ```
 python -m venv venv
-```
-```
-cd .\venv\Scripts
-```
-```
-.\activate 
+.\venv\Scripts\activate
 ```
 
-Go back to the MC-DFM repository and install the package with:
+Install the package:
 
 ```
-pip install . 
+pip install .
 ```
 
-## Installation (using miniconda)
-To install the package, git clone the repository.
+### Option 2: conda
 
-Then enter the MC-DFM Directory
-
-```
-cd .\MC-DFM\
-```
-
-Create and activate a new environment (miniconda):
+Create and activate a conda environment:
 
 ```
-conda create -n "mcdfm" python=3.12 ipython 
-```
-
-```
+conda create -n mcdfm python=3.12 ipython
 conda activate mcdfm
 ```
 
-Install the package using:
+Install the package:
 
 ```
-pip install . 
+pip install .
 ```
 
-## Requirements 
-This package is written in python. Most of the MC-DFM code is written in Pytorch and can be accelerated with a GPU using the CUDA toolkit. For the full list of libraries used see the require.txt file. The Python version is 3.12 
+## Requirements
+
+Python >= 3.9 is required (Python 3.12 recommended). The core scattering simulator is implemented in PyTorch and can be accelerated with a GPU via the CUDA toolkit. All dependencies are listed in `require.txt` and are installed automatically by `pip install .`:
+
+| Package | Version |
+|---|---|
+| torch | 2.6.0 |
+| numpy | 2.2.2 |
+| scipy | 1.15.1 |
+| matplotlib | 3.10.0 |
+| pandas | 2.2.3 |
+| scikit-learn | 1.6.1 |
+| plotly | 6.0.0 |
+| h5py | 3.12.1 |
+| openpyxl | 3.1.5 |
+| ipykernel | 6.29.5 |
+| nbformat | 5.10.4 |
