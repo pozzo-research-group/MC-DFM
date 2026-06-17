@@ -25,7 +25,8 @@ setup(
         'openai==2.24.0',
         'openai-agents==0.10.2',
         'agapi==2025.11.15',
-        'gsd==3.4.2'
+        'gsd==3.4.2',
+        'gradio==5.49.1'
     ],  # Dependencies to install
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -111,10 +111,10 @@ Python >= 3.9 is required (Python 3.12 recommended). The core scattering simulat
 
 | Package | Version |
 |---|---|
-| torch | 2.6.0 |
-| numpy | 2.2.2 |
+| torch | 2.8.0 |
+| numpy | 2.3.0 |
 | scipy | 1.15.1 |
-| matplotlib | 3.10.0 |
+| matplotlib | 3.10.8 |
 | pandas | 2.2.3 |
 | scikit-learn | 1.6.1 |
 | plotly | 6.0.0 |
@@ -122,3 +122,35 @@ Python >= 3.9 is required (Python 3.12 recommended). The core scattering simulat
 | openpyxl | 3.1.5 |
 | ipykernel | 6.29.5 |
 | nbformat | 5.10.4 |
+| openai | 2.24.0 |
+| openai-agents | 0.10.2 |
+| agapi | 2025.11.15 |
+| gsd | 3.4.2 |
+| gradio | 5.49.1 |
+
+## LLM Interface
+
+MC-DFM includes an optional LLM-powered interface that generates simulation scripts from natural-language descriptions, using the [AtomGPT](https://atomgpt.org) API. To use it, create a free account at [atomgpt.org](https://atomgpt.org) and copy your API key from **Settings → Account → Show API key**.
+
+There are two ways to run it:
+
+### Option 1: Jupyter notebook
+
+Open and run [`LLM Examples/Run LLM.ipynb`](LLM%20Examples/Run%20LLM.ipynb), entering your API key and a description of the structure to simulate.
+
+### Option 2: Gradio browser app
+
+After installing the package, launch the browser interface from the repository root:
+
+```
+python -m sas_llm.gradio_app
+```
+
+This starts a local server and prints a URL (default `http://127.0.0.1:7860`). Open it in your browser, then:
+
+1. Enter your AtomGPT API key and the model (default `openai/gpt-oss-20b`)
+2. Choose a polydispersity mode (`weighted_sum` or `distribution`)
+3. Describe the structure to simulate and click **Generate script**
+4. Click **Run generated script** to execute it and view the resulting scattering curves and structure plots
+
+Generated scripts are saved to the `sas_llm_results/` directory.

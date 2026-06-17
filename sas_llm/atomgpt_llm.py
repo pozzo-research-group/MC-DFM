@@ -11,16 +11,20 @@ import sys
 from datetime import datetime
 
 
+_SAS_LLM_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
 async def use_llm(api_key, model, mode, input_text, save_dir):
     if mode == 'weighted_sum':
-        with open("../sas_llm/instructions_weighted_sum.txt", "r", encoding="utf-8") as f:
-            instructions = f.read()
+        instructions_path = os.path.join(_SAS_LLM_DIR, "instructions_weighted_sum.txt")
     elif mode == 'distribution':
-        with open("../sas_llm/instructions_distribution.txt", "r", encoding="utf-8") as f:
-            instructions = f.read()
+        instructions_path = os.path.join(_SAS_LLM_DIR, "instructions_distribution.txt")
     else:
         print('ERROR: Set mode to weighted_sum or distribution')
         sys.exit()
+
+    with open(instructions_path, "r", encoding="utf-8") as f:
+        instructions = f.read()
 
     set_tracing_disabled(disabled=True)
 
