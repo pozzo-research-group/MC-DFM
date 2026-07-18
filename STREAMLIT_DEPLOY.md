@@ -21,9 +21,22 @@ requiring no Docker or paid plan. Anyone can use it from a link.
    - **Repository:** `pozzo-research-group/MC-DFM`
    - **Branch:** `main`
    - **Main file path:** `streamlit_app.py`
+   - **Advanced settings → Python version: 3.12** (the pinned wheels in
+     `requirements.txt` target Python 3.12; a different version can cause a
+     missing-wheel install failure).
 5. Click **Deploy**. Streamlit installs `requirements.txt` (first build takes a
    few minutes for torch) and serves the app at a public URL like
    `https://<name>.streamlit.app`. Share that link.
+
+### If the build fails with `ModuleNotFoundError`
+
+This means the dependency install did not complete. Common causes and fixes:
+
+- **torch pulled the huge CUDA wheel** and timed out — `requirements.txt` pins
+  `torch==2.8.0+cpu` to force the small CPU wheel, which avoids this.
+- **Wrong Python version** — set Python to **3.12** in the app's Advanced
+  settings (or Manage app → Settings), then reboot the app.
+- Open **Manage app → Logs** to see which package failed, and adjust its pin.
 
 ## How users interact with it
 

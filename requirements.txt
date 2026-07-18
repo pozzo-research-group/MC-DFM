@@ -1,11 +1,13 @@
 # Dependencies for Streamlit Community Cloud deployment (streamlit_app.py).
-# Torch is installed from the CPU wheel index to keep the build small. There is
+# torch is pinned to the "+cpu" build so pip installs the small CPU wheel from
+# the PyTorch index instead of the large default CUDA wheel (which can time out
+# or run out of memory on Streamlit Cloud and abort the whole install). There is
 # no gradio here, so there is no pydantic version conflict.
 # (See require.txt for the pinned local/development environment, and
 # requirements-hf.txt for the Hugging Face / gradio deployment.)
 --extra-index-url https://download.pytorch.org/whl/cpu
 
-torch==2.8.0
+torch==2.8.0+cpu
 numpy==2.3.0
 scipy==1.15.1
 matplotlib==3.10.8
