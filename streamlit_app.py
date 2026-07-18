@@ -79,6 +79,13 @@ st.markdown(
     "Create a free account at [atomgpt.org](https://atomgpt.org) and copy your "
     "API key from **Settings → Account → Show API key**."
 )
+st.info(
+    "This app is intended as a simple demonstration of the MC-DFM LLM workflow "
+    "and is limited by the computational power available to it. For more "
+    "sophisticated use — such as large complex assemblies or protein assemblies — "
+    "download and run the code from "
+    "[github.com/pozzo-research-group/MC-DFM](https://github.com/pozzo-research-group/MC-DFM)."
+)
 
 api_key = st.text_input("AtomGPT API Key", type="password")
 
