@@ -188,6 +188,8 @@ if st.session_state.code:
                                 continue
                         except OSError:
                             continue
+                        if fn == USER_LOG_FILE:
+                            continue
                         low = fn.lower()
                         if low.endswith(".png"):
                             images.append(p)

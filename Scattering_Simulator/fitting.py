@@ -383,7 +383,7 @@ def plot_structure(coordinates, n_samples):
 
     def rotate(angle):
         ax.view_init(azim=angle)
-    filenames = sorted(os.listdir('../sas_llm_results'))[-1]
+    filenames = sorted([d for d in os.listdir('../sas_llm_results') if os.path.isdir(os.path.join('../sas_llm_results', d))])[-1]
     path = '../sas_llm_results/' + filenames
     dt = datetime.now().strftime("%H-%M-%S")
     plt.savefig(path + '/Scattering_Structure' + dt + '.png', dpi=600, bbox_inches="tight")
@@ -428,7 +428,7 @@ def plot_structure(coordinates, n_samples):
     #axes[2].set_aspect('equal', adjustable='box')
 
     plt.tight_layout()
-    filenames = sorted(os.listdir('../sas_llm_results'))[-1]
+    filenames = sorted([d for d in os.listdir('../sas_llm_results') if os.path.isdir(os.path.join('../sas_llm_results', d))])[-1]
     path = '../sas_llm_results/' + filenames
     dt = datetime.now().strftime("%H-%M-%S")
     plt.savefig(path + '/Scattering_Structure_2D' + dt + '.png', dpi=600, bbox_inches="tight")
@@ -480,7 +480,7 @@ def plot_structure_lattice(coordinates, lattice_coordinates, n_samples):
         ax.view_init(azim=angle)
 
     
-    filenames = sorted(os.listdir('../sas_llm_results'))[-1]
+    filenames = sorted([d for d in os.listdir('../sas_llm_results') if os.path.isdir(os.path.join('../sas_llm_results', d))])[-1]
     path = '../sas_llm_results/' + filenames
     dt = datetime.now().strftime("%H-%M-%S")
     plt.savefig(path + '/Scattering_Structure' + dt + '.png', dpi=600, bbox_inches="tight")
@@ -527,7 +527,7 @@ def plot_structure_lattice(coordinates, lattice_coordinates, n_samples):
 
     plt.tight_layout()
 
-    filenames = sorted(os.listdir('../sas_llm_results'))[-1]
+    filenames = sorted([d for d in os.listdir('../sas_llm_results') if os.path.isdir(os.path.join('../sas_llm_results', d))])[-1]
     path = '../sas_llm_results/' + filenames
     dt = datetime.now().strftime("%H-%M-%S")
     plt.savefig(path + '/Scattering_Structure_2D' + dt + '.png', dpi=600, bbox_inches="tight")
@@ -542,7 +542,7 @@ def plot_intensity(q, I_q):
     plt.xscale('log')
     plt.ylabel('I(q) (Arb. Unit.)')
     plt.xlabel('q ($\\AA^{-1}$)')
-    filenames = sorted(os.listdir('../sas_llm_results'))[-1]
+    filenames = sorted([d for d in os.listdir('../sas_llm_results') if os.path.isdir(os.path.join('../sas_llm_results', d))])[-1]
     path = '../sas_llm_results/' + filenames
     plt.savefig(path  + '/Intensity.png', dpi=600, bbox_inches="tight")
     #plt.show()
@@ -575,7 +575,7 @@ def plot_simulated_and_experimental(exp_data, best_fit, best_solution, param_con
     ax[1].set_ylabel('R')
     ax[1].hlines(0, np.min(exp_data[:,0]), np.max(exp_data[:,0]), color='red', linewidth=3, linestyle='--')
     ax[1].set_xlabel('q ($\\AA^{-1}$)')
-    filenames = sorted(os.listdir('../sas_llm_results'))[-1]
+    filenames = sorted([d for d in os.listdir('../sas_llm_results') if os.path.isdir(os.path.join('../sas_llm_results', d))])[-1]
     path = '../sas_llm_results/' + filenames
     plt.savefig(path + '/Intensity.png', dpi=600, bbox_inches="tight")
     save_parameters_txt(best_solution, filename= path + "/Fit_Results.txt")
