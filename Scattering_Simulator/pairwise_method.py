@@ -270,7 +270,163 @@ class scattering_simulator:
         self.p_r = all_p_r
         self.convert_to_intensity(q)
         return self.I_q
-    
+
+
+    def simulate_scattering_curve_box(self, coordinates, bins, q,
+                                      box_fractions=(0.15, 0.20, 0.25, 0.30, 0.5, 1),
+                                      seed=None):
+        '''Simulates the scattering curve of the whole box and of randomly placed cubic regions.
+
+        Instead of dividing the box into a grid, this function selects independent cubic regions
+        at random locations inside the larger box. For each fraction f in "box_fractions", one
+        cubic region of side f times the box extent is placed at a random position fully inside
+        the box, and its scattering curve is simulated. The regions are independent random
+        samples of the box and may overlap. For example, "box_fractions=[0.05, 0.1, 0.15, 0.2]"
+        creates four regions of size 0.05 x 0.05 x 0.05, 0.1 x 0.1 x 0.1, 0.15 x 0.15 x 0.15 and
+        0.2 x 0.2 x 0.2 of the larger box. Repeating a value (e.g. [0.1, 0.1, 0.1]) selects that
+        many independent random regions of the same size.
+
+        inputs:
+        - coordinates: array of x, y, z (and optional SLD) coordinates defining the box.
+        - bins: number of bins used to create the histogram.
+        - q: the momentum transfer vector (q).
+        - box_fractions: list of fractions of the box extent defining the side of each random
+          cubic region, e.g. [0.05, 0.1, 0.15, 0.2].
+        - seed: optional random seed for reproducible region placement.
+
+        Before summing, each curve is scaled so the curves can be added correctly: the curve
+        is divided by its invariant (which removes the arbitrary intensity scale from the
+        random sampling) and then multiplied by the number of coordinates inside that region
+        (which weights each curve by its number of scatterers). The whole-box reference curve
+        is scaled the same way so it is directly comparable to the summed curve.
+
+        outputs:
+        - I_q_whole: the (invariant-and-count scaled) scattering curve of the whole box.
+        - I_q_boxes: a list of the scaled scattering curves, one per random region.
+        - I_summed: the sum of all the scaled random-region scattering curves.
+        - box_info: a list of dicts with the fraction, side lengths, lower corner, point count
+          and invariant of each random region.'''
+
+        if seed is not None:
+            np.random.seed(seed)
+
+        # Work with a NumPy array so regions can be selected by position.
+        if isinstance(coordinates, torch.Tensor):
+            coords = coordinates.detach().cpu().numpy()
+        else:
+            coords = np.asarray(coordinates)
+
+        q_np = q.detach().cpu().numpy() if isinstance(q, torch.Tensor) else np.asarray(q)
+
+        # --- Scattering of the whole box (reference) ---
+        self.sample_building_block(coords)
+        self.use_building_block_as_structure()
+        I_q_whole = self.simulate_scattering_curve(bins, q).detach().cpu().numpy()
+
+        # Scale the whole-box curve the same way as the regions (divide by its invariant and
+        # multiply by the total number of coordinates) so it is comparable to the summed curve.
+        n_total = coords.shape[0]
+        inv_whole = invariant(np.column_stack((q_np, I_q_whole)))
+        if inv_whole != 0:
+            I_q_whole = I_q_whole / inv_whole * n_total
+
+        # Extent of the larger box along each axis.
+        mins = coords[:, :3].min(axis=0)
+        maxs = coords[:, :3].max(axis=0)
+        extent = maxs - mins
+
+        def draw_box_wireframe(ax, x0, x1, y0, y1, z0, z1, color, lw):
+            '''Draws the 12 edges of a rectangular region on a 3D axis.'''
+            corners = np.array([
+                [x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0],
+                [x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1],
+            ])
+            edges = [
+                (0, 1), (1, 2), (2, 3), (3, 0),   # bottom face
+                (4, 5), (5, 6), (6, 7), (7, 4),   # top face
+                (0, 4), (1, 5), (2, 6), (3, 7),   # vertical edges
+            ]
+            for a, b in edges:
+                ax.plot(*zip(corners[a], corners[b]), color=color, linewidth=lw)
+
+        n_boxes = len(box_fractions)
+        colors = plt.cm.viridis(np.linspace(0, 1, max(n_boxes, 1)))
+
+        I_q_boxes = []
+        box_info = []
+
+        fig1, ax1 = plt.subplots(figsize=(10, 7))   # scattering curves of the random regions
+        fig0 = plt.figure(figsize=(9, 8))            # 3D view of the random regions in the box
+        ax0 = fig0.add_subplot(projection='3d')
+        # Draw the larger box outline for reference.
+        draw_box_wireframe(ax0, mins[0], maxs[0], mins[1], maxs[1], mins[2], maxs[2], 'black', 2.0)
+
+        for idx, f in enumerate(box_fractions):
+            color = colors[idx]
+
+            # Cubic region side = fraction of the box extent along each axis.
+            side = f * extent
+            # Random lower corner so the region is fully contained inside the larger box.
+            lower = mins + np.random.rand(3) * (extent - side)
+            upper = lower + side
+
+            mask = np.all((coords[:, :3] >= lower) & (coords[:, :3] <= upper), axis=1)
+            sub_coords = coords[mask]
+
+            # Draw this random region in the 3D view.
+            draw_box_wireframe(ax0, lower[0], upper[0], lower[1], upper[1],
+                               lower[2], upper[2], color, 1.5)
+
+            n_pts = int(sub_coords.shape[0])
+            if n_pts < 2:
+                # Not enough points in this region to compute a scattering curve.
+                I_q_box = np.zeros_like(q_np)
+            else:
+                self.sample_building_block(sub_coords)
+                self.use_building_block_as_structure()
+                I_q_box = self.simulate_scattering_curve(bins, q).detach().cpu().numpy()
+
+            # Scale the curve so curves can be summed correctly: divide by its invariant to
+            # remove the arbitrary intensity scale, then multiply by the number of coordinates
+            # in the region to weight it by the number of scatterers.
+            inv_box = invariant(np.column_stack((q_np, I_q_box)))
+            if inv_box != 0:
+                I_q_box = I_q_box / inv_box * n_pts
+
+            I_q_boxes.append(I_q_box)
+            box_info.append({
+                'fraction': f,
+                'side': side,
+                'lower': lower,
+                'n_points': n_pts,
+                'invariant': inv_box,
+            })
+            ax1.plot(q_np, I_q_box, linewidth=2, color=color,
+                     label=f'f = {f} (side ~ {np.mean(side):.1f} $\\AA$)')
+
+        # Sum of all the scaled random-region scattering curves.
+        I_summed = np.sum(np.vstack(I_q_boxes), axis=0)
+
+        # Whole box as a dashed reference curve, and the summed curve.
+        ax1.plot(q_np, I_q_whole, linewidth=2, color='black', linestyle='--', label='Whole box')
+        ax1.plot(q_np, I_summed, linewidth=2.5, color='red', label='Sum of all regions')
+        ax1.set_xscale('log')
+        ax1.set_yscale('log')
+        ax1.set_xlabel('q ($\\AA^{-1}$)')
+        ax1.set_ylabel('Intensity (arb. unit)')
+        ax1.set_title('Scattering of randomly selected cubic regions')
+        ax1.legend(fontsize=10)
+
+        ax0.set_xlabel('x ($\\AA$)')
+        ax0.set_ylabel('y ($\\AA$)')
+        ax0.set_zlabel('z ($\\AA$)')
+        ax0.set_title('Randomly placed cubic regions in the box')
+        plt.tight_layout()
+        plt.show()
+
+        return I_q_whole, I_q_boxes, I_summed, box_info
+
+
     # def simulate_scattering_curve_fast_lattice(self, coordinates, lattice, bins, q, save=False):
     #     """
     #     Parallelized version using Ray for calculating scattering curve.

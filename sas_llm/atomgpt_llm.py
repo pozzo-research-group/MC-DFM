@@ -14,15 +14,16 @@ from datetime import datetime
 _SAS_LLM_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-async def use_llm(api_key, model, mode, input_text, save_dir):
-    if mode == 'weighted_sum':
-        instructions_path = os.path.join(_SAS_LLM_DIR, "instructions_weighted_sum.txt")
-    elif mode == 'distribution':
-        instructions_path = os.path.join(_SAS_LLM_DIR, "instructions_distribution.txt")
-    else:
-        print('ERROR: Set mode to weighted_sum or distribution')
-        sys.exit()
+async def use_llm(api_key, model, input_text, save_dir):
+    # if mode == 'weighted_sum':
+    #     instructions_path = os.path.join(_SAS_LLM_DIR, "instructions_weighted_sum.txt")
+    # elif mode == 'distribution':
+    #     instructions_path = os.path.join(_SAS_LLM_DIR, "instructions_distribution.txt")
+    # else:
+    #     print('ERROR: Set mode to weighted_sum or distribution')
+    #     sys.exit()
 
+    instructions_path = os.path.join(_SAS_LLM_DIR, "instructions_weighted_sum.txt")
     with open(instructions_path, "r", encoding="utf-8") as f:
         instructions = f.read()
 
@@ -51,7 +52,7 @@ async def use_llm(api_key, model, mode, input_text, save_dir):
     with open(folder + '/generated_script.py', "w", encoding="utf-8") as f:
         f.write(code)
 
-    with open(folder + '/user_input_text_mode_' + mode + '.txt', "w") as file:
+    with open(folder + '/user_input_text.txt', "w") as file:
         file.write(input_text)
 
 
@@ -96,3 +97,16 @@ def create_datetime_folder(date_str=None, time_str=None, base_path="."):
     return folder_path
 
 
+
+def list_atomgpt_models(api_key):
+    client = OpenAI(base_url="https://atomgpt.org/api", api_key=api_key)
+    try:
+        models = client.models.list()
+        return [m.id for m in models.data]
+    except Exception as e:
+        print(f"Error listing models: {type(e).__name__}: {e}")
+        return []
+
+def print_atomgpt_models(api_key):
+    for name in list_atomgpt_models(api_key):
+        print(name)

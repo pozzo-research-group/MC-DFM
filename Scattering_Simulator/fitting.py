@@ -573,7 +573,7 @@ def plot_simulated_and_experimental(exp_data, best_fit, best_solution, param_con
     ax[1].set_yticks([-1,1])
     ax[1].set_xscale('log')
     ax[1].set_ylabel('R')
-    ax[1].hlines(0, np.min(exp_data[:,0]), np.max(exp_data[:,0]), color='k', linewidth=3, linestyle='--')
+    ax[1].hlines(0, np.min(exp_data[:,0]), np.max(exp_data[:,0]), color='red', linewidth=3, linestyle='--')
     ax[1].set_xlabel('q ($\\AA^{-1}$)')
     filenames = os.listdir('../sas_llm_results')[-1]
     path = '../sas_llm_results/' + filenames

@@ -1,0 +1,1 @@
+Simulate the scattering of a sphere with a radius of 50 angstrom. Add polydispersity to the radius modeled by a normal distribution with mean 50 and standard deviation of 25 angstrom.
