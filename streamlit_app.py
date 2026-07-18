@@ -25,7 +25,7 @@ import streamlit as st
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from sas_llm.atomgpt_llm import use_llm
+from sas_llm.atomgpt_llm import use_llm, list_atomgpt_models
 
 DEFAULT_SAVE_DIR = "sas_llm_results/"
 DEFAULT_MODEL = "gemma-4-26b"
@@ -43,8 +43,25 @@ st.markdown(
 )
 
 api_key = st.text_input("AtomGPT API Key", type="password")
-model = st.text_input("Model", value=DEFAULT_MODEL)
-save_dir = st.text_input("Save directory", value=DEFAULT_SAVE_DIR) or DEFAULT_SAVE_DIR
+
+
+@st.cache_data(show_spinner=False)
+def get_models(key):
+    """Fetches the list of available AtomGPT models (cached per API key)."""
+    return list_atomgpt_models(key)
+
+
+# Model dropdown, populated from the models currently available on AtomGPT once
+# an API key is entered. Falls back to the default model until then.
+if api_key:
+    available_models = get_models(api_key) or [DEFAULT_MODEL]
+else:
+    available_models = [DEFAULT_MODEL]
+
+default_index = available_models.index(DEFAULT_MODEL) if DEFAULT_MODEL in available_models else 0
+model = st.selectbox("Model", available_models, index=default_index)
+
+save_dir = DEFAULT_SAVE_DIR
 instructions = st.text_area(
     "Instructions",
     placeholder="Simulate the scattering of a square-based pyramid with an edge length of 10 nm and a height of 10 nm.",
