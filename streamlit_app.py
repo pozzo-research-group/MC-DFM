@@ -16,6 +16,7 @@ matplotlib.use("Agg", force=True)
 
 import os
 import sys
+import time
 import glob
 import asyncio
 import subprocess
@@ -85,6 +86,9 @@ if st.session_state.code:
         folder = st.session_state.folder
         script_path = os.path.abspath(os.path.join(folder, "generated_script.py"))
         proc = None
+        # Files newer than this are outputs produced by this run. The buffer
+        # avoids clock/rounding issues.
+        run_start = time.time() - 1
         with st.spinner("Running the simulation..."):
             try:
                 proc = subprocess.run(
@@ -106,8 +110,45 @@ if st.session_state.code:
                 st.success("Script ran successfully.")
                 if output.strip():
                     st.text(output[-500:])
-                pngs = sorted(glob.glob(os.path.join(os.path.abspath(folder), "*.png")))
-                for png in pngs:
-                    st.image(png)
-                if not pngs:
+
+                # Collect every file the run produced anywhere under the results
+                # directory (by modification time), so outputs are found even if
+                # the script saved them into a different results subfolder.
+                images, data_files = [], []
+                for root, _dirs, files in os.walk(save_dir):
+                    for fn in files:
+                        p = os.path.join(root, fn)
+                        try:
+                            if os.path.getmtime(p) < run_start:
+                                continue
+                        except OSError:
+                            continue
+                        low = fn.lower()
+                        if low.endswith(".png"):
+                            images.append(p)
+                        elif low.endswith((".txt", ".csv", ".npy", ".dat")):
+                            data_files.append(p)
+
+                images.sort()
+                data_files.sort()
+
+                if images:
+                    st.subheader("Plots")
+                    for img in images:
+                        st.image(img, caption=os.path.basename(img))
+                else:
                     st.info("The script ran but did not save any plot images.")
+
+                # Download buttons for the plots and the scattering data.
+                downloads = images + [d for d in data_files
+                                      if os.path.basename(d) != "generated_script.py"]
+                if downloads:
+                    st.subheader("Download outputs")
+                    for i, path in enumerate(downloads):
+                        with open(path, "rb") as fh:
+                            st.download_button(
+                                label=f"Download {os.path.basename(path)}",
+                                data=fh.read(),
+                                file_name=os.path.basename(path),
+                                key=f"dl_{i}",
+                            )
