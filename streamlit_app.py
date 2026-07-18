@@ -74,10 +74,10 @@ def prune_old_runs(save_dir, keep=MAX_SAVED_RUNS):
 st.set_page_config(page_title="MC-DFM LLM Interface", page_icon="🔬")
 st.title("MC-DFM LLM Interface")
 st.markdown(
-    "Describe a structure in plain language and the AtomGPT LLM will generate "
-    "an MC-DFM Python script to simulate its scattering curve. "
-    "Create a free account at [atomgpt.org](https://atomgpt.org) and copy your "
-    "API key from **Settings → Account → Show API key**."
+    "Describe a structure in plain language and the LLM will generate "
+    "a Python script to simulate its small angle scattering curve. This tool "
+    "works best for geometric structures (e.g., tetrahedrons, pyramids, cones) "
+    "and their assemblies."
 )
 st.info(
     "This app is intended as a simple demonstration of the MC-DFM LLM workflow "
@@ -87,7 +87,8 @@ st.info(
     "[github.com/pozzo-research-group/MC-DFM](https://github.com/pozzo-research-group/MC-DFM)."
 )
 
-api_key = st.text_input("AtomGPT API Key", type="password")
+api_key = st.text_input("AtomGPT API Key (Create a free account at [atomgpt.org](https://atomgpt.org) and copy your "
+    "API key from **Settings → Account → Show API key**.)", type="password")
 
 
 @st.cache_data(show_spinner=False)
@@ -128,7 +129,7 @@ if st.button("Generate script", type="primary"):
         log_user_input(save_dir, model, instructions)
         prune_old_runs(save_dir)
         before = set(os.listdir(save_dir))
-        with st.spinner("Generating code with AtomGPT..."):
+        with st.spinner("Generating code ..."):
             try:
                 asyncio.run(use_llm(api_key, model, instructions, save_dir))
             except Exception as e:
@@ -147,7 +148,7 @@ if st.button("Generate script", type="primary"):
 # --- Show the (editable) generated script and offer to run it ---
 if st.session_state.code:
     st.subheader("Generated script (editable)")
-    st.caption("Edit the code below before running if you want to tweak or fix it.")
+    st.caption("Edit the code below before running if you want to tweak or fix it. A common edit is the desired q-range.")
     st.session_state.setdefault("editor", st.session_state.code)
     edited_code = st.text_area("Python script", key="editor", height=400)
 
