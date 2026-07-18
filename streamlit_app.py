@@ -76,15 +76,22 @@ if st.button("Generate script", type="primary"):
             with open(os.path.join(folder, "generated_script.py"), "r", encoding="utf-8") as f:
                 st.session_state.code = f.read()
             st.session_state.folder = folder
+            # Seed the editable code box with the freshly generated script.
+            st.session_state.editor = st.session_state.code
 
-# --- Show the generated script and offer to run it ---
+# --- Show the (editable) generated script and offer to run it ---
 if st.session_state.code:
-    st.subheader("Generated script")
-    st.code(st.session_state.code, language="python")
+    st.subheader("Generated script (editable)")
+    st.caption("Edit the code below before running if you want to tweak or fix it.")
+    st.session_state.setdefault("editor", st.session_state.code)
+    edited_code = st.text_area("Python script", key="editor", height=400)
 
     if st.button("Run generated script"):
         folder = st.session_state.folder
         script_path = os.path.abspath(os.path.join(folder, "generated_script.py"))
+        # Run whatever is currently in the editor (the user's edits included).
+        with open(script_path, "w", encoding="utf-8") as f:
+            f.write(st.session_state.editor)
         proc = None
         # Files newer than this are outputs produced by this run. The buffer
         # avoids clock/rounding issues.
