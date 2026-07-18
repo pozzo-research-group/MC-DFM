@@ -1,0 +1,23 @@
+# Dependencies for Streamlit Community Cloud deployment (streamlit_app.py).
+# Torch is installed from the CPU wheel index to keep the build small. There is
+# no gradio here, so there is no pydantic version conflict.
+# (See require.txt for the pinned local/development environment, and
+# requirements-hf.txt for the Hugging Face / gradio deployment.)
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+torch==2.8.0
+numpy==2.3.0
+scipy==1.15.1
+matplotlib==3.10.8
+pandas==2.2.3
+scikit-learn==1.6.1
+plotly==6.0.0
+h5py==3.12.1
+openpyxl==3.1.5
+nbformat==5.10.4
+gsd==3.4.2
+openai==2.24.0
+openai-agents==0.10.2
+agapi==2025.11.15
+pydantic>=2.12.3
+streamlit>=1.40
