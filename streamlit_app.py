@@ -18,8 +18,10 @@ import os
 import sys
 import time
 import glob
+import shutil
 import asyncio
 import subprocess
+from datetime import datetime
 
 import streamlit as st
 
@@ -30,8 +32,44 @@ from sas_llm.atomgpt_llm import use_llm, list_atomgpt_models
 DEFAULT_SAVE_DIR = "sas_llm_results/"
 DEFAULT_MODEL = "gemma-4-26b"
 RUN_TIMEOUT_SECONDS = 120
+MAX_SAVED_RUNS = 25          # keep only the most recent N result folders on disk
+USER_LOG_FILE = "user_inputs_log.txt"
 _REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 _NOTEBOOKS_DIR = os.path.join(_REPO_ROOT, "Notebooks")
+
+
+def log_user_input(save_dir, model, instructions):
+    """Records a user's prompt so the app owner can see what is being run.
+
+    The line is printed to stdout (visible only to the owner in the Streamlit
+    Cloud "Manage app -> Logs" panel) and appended to a central log file that is
+    exempt from pruning. Note: both are on the ephemeral filesystem and reset
+    when the app restarts; use an external store for durable logging.
+    """
+    line = f"{datetime.now().isoformat(timespec='seconds')}\tmodel={model}\t{instructions!r}"
+    print("USER_INPUT\t" + line, flush=True)
+    try:
+        os.makedirs(save_dir, exist_ok=True)
+        with open(os.path.join(save_dir, USER_LOG_FILE), "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+    except OSError:
+        pass
+
+
+def prune_old_runs(save_dir, keep=MAX_SAVED_RUNS):
+    """Deletes all but the most recent ``keep`` result folders to bound disk use.
+
+    Only directories are pruned; the central user-input log file is left intact.
+    """
+    if not os.path.isdir(save_dir):
+        return
+    folders = [
+        os.path.join(save_dir, d) for d in os.listdir(save_dir)
+        if os.path.isdir(os.path.join(save_dir, d))
+    ]
+    folders.sort(key=lambda p: os.path.getmtime(p), reverse=True)
+    for old in folders[keep:]:
+        shutil.rmtree(old, ignore_errors=True)
 
 st.set_page_config(page_title="MC-DFM LLM Interface", page_icon="🔬")
 st.title("MC-DFM LLM Interface")
@@ -79,6 +117,9 @@ if st.button("Generate script", type="primary"):
         st.error("Please enter instructions.")
     else:
         os.makedirs(save_dir, exist_ok=True)
+        # Record the user's prompt (owner-visible) and bound disk use.
+        log_user_input(save_dir, model, instructions)
+        prune_old_runs(save_dir)
         before = set(os.listdir(save_dir))
         with st.spinner("Generating code with AtomGPT..."):
             try:
