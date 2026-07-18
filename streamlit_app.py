@@ -75,9 +75,12 @@ st.set_page_config(page_title="MC-DFM LLM Interface", page_icon="🔬")
 st.title("MC-DFM LLM Interface")
 st.markdown(
     "Describe a structure in plain language and the LLM will generate "
-    "a Python script to simulate its small angle scattering curve. This tool "
-    "works best for geometric structures (e.g., tetrahedrons, pyramids, cones) "
-    "and their assemblies."
+    "a Python script to simulate its small angle scattering curve. " \
+    "This tool uses a LLM to generate the desired structure " \
+    "in real-space using geometric functions and then uses the MC-DFM, " \
+    "a python implementation of the numerical solution to the Debye Scattering " \
+    "Equation, to calculate the scattering curve. It works best for geometric " \
+    "structures (e.g., spheres, tetrahedrons, pyramids, cones) and their assemblies."
 )
 st.info(
     "This app is intended as a simple demonstration of the MC-DFM LLM workflow "
