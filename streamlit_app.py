@@ -71,8 +71,8 @@ def prune_old_runs(save_dir, keep=MAX_SAVED_RUNS):
     for old in folders[keep:]:
         shutil.rmtree(old, ignore_errors=True)
 
-st.set_page_config(page_title="MC-DFM LLM Interface", page_icon="🔬")
-st.title("MC-DFM LLM Interface")
+st.set_page_config(page_title="LLM Scattering Studio", page_icon="🔬")
+st.title("LLM Scattering Studio")
 st.markdown(
     "Describe a structure in plain language and the LLM will generate "
     "a Python script to simulate its small angle scattering curve. "
@@ -116,7 +116,7 @@ save_dir = DEFAULT_SAVE_DIR
 EXAMPLES = {
     "Sphere": ("🔵", "Simulate the scattering of a sphere with a radius of 50 angstroms."),
     "Pyramid": ("🔺", "Simulate the scattering of a square-based pyramid with an edge length of 10 nm and a height of 10 nm."),
-    "Core-shell": ("🧅", "Simulate the scattering of a core-shell sphere with a core radius of 40 angstroms and a shell thickness of 15 angstroms."),
+    "Core-shell": ("🧅", "Simulate the scattering of a core-shell sphere with a core radius of 40 angstroms and a shell thickness of 15 angstroms. The SLD contrast of the shell is 5 and the core is 3."),
     "Dimer": ("🔗", "Simulate the scattering of a dimer of spheres, each 30 angstroms in radius, separated by 80 angstroms."),
 }
 st.caption("Not sure where to start? Click an example below to fill in the instructions:")
