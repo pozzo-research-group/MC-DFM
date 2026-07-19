@@ -85,7 +85,7 @@ st.markdown(
 st.info(
     "This app is intended as a simple demonstration of the MC-DFM LLM workflow "
     "and is limited by the computational power available to it. For more "
-    "sophisticated use — such as large complex assemblies or protein assemblies — "
+    "sophisticated use — such as large complex assemblies, protein assemblies, or polydisperse systems — "
     "download and run the code from "
     "[github.com/pozzo-research-group/MC-DFM](https://github.com/pozzo-research-group/MC-DFM)."
 )
@@ -112,16 +112,17 @@ model = st.selectbox("Model", available_models, index=default_index)
 
 save_dir = DEFAULT_SAVE_DIR
 
-# Example prompts that fill the instructions box when clicked.
+# Example prompts (icon, prompt text) that fill the instructions box when clicked.
 EXAMPLES = {
-    "Sphere": "Simulate the scattering of a sphere with a radius of 50 angstroms.",
-    "Pyramid": "Simulate the scattering of a square-based pyramid with an edge length of 10 nm and a height of 10 nm.",
-    "Core-shell": "Simulate the scattering of a core-shell sphere with a core radius of 40 angstroms and a shell thickness of 15 angstroms.",
-    "Dimer": "Simulate the scattering of a dimer of spheres, each 30 angstroms in radius, separated by 80 angstroms.",
+    "Sphere": ("🔵", "Simulate the scattering of a sphere with a radius of 50 angstroms."),
+    "Pyramid": ("🔺", "Simulate the scattering of a square-based pyramid with an edge length of 10 nm and a height of 10 nm."),
+    "Core-shell": ("🧅", "Simulate the scattering of a core-shell sphere with a core radius of 40 angstroms and a shell thickness of 15 angstroms."),
+    "Dimer": ("🔗", "Simulate the scattering of a dimer of spheres, each 30 angstroms in radius, separated by 80 angstroms."),
 }
+st.caption("Not sure where to start? Click an example below to fill in the instructions:")
 ex_cols = st.columns(len(EXAMPLES))
-for col, (label, text) in zip(ex_cols, EXAMPLES.items()):
-    if col.button(label):
+for col, (label, (icon, text)) in zip(ex_cols, EXAMPLES.items()):
+    if col.button(label, icon=icon):
         st.session_state["instructions_input"] = text
 
 st.session_state.setdefault("instructions_input", "")
