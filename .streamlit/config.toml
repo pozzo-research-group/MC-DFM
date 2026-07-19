@@ -1,7 +1,0 @@
-# Streamlit theme for the MC-DFM LLM app.
-[theme]
-primaryColor = "#5B6EF5"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#EEF1FB"
-textColor = "#1C2333"
-font = "sans serif"

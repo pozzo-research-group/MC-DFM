@@ -71,23 +71,8 @@ def prune_old_runs(save_dir, keep=MAX_SAVED_RUNS):
     for old in folders[keep:]:
         shutil.rmtree(old, ignore_errors=True)
 
-st.set_page_config(page_title="MC-DFM LLM Interface", page_icon="🔬", layout="wide")
-
-
-@st.cache_data(show_spinner=False)
-def get_models(key):
-    """Fetches the list of available AtomGPT models (cached per API key)."""
-    return list_atomgpt_models(key)
-
-
-# Centered header image (the project's scattering render).
-_HEADER_IMG = os.path.join(_REPO_ROOT, "Images", "RhuA1.png")
-_hc1, _hc2, _hc3 = st.columns([1, 2, 1])
-with _hc2:
-    if os.path.exists(_HEADER_IMG):
-        st.image(_HEADER_IMG, use_container_width=True)
-
-st.title("🔬 MC-DFM LLM Interface")
+st.set_page_config(page_title="MC-DFM LLM Interface", page_icon="🔬")
+st.title("MC-DFM LLM Interface")
 st.markdown(
     "Describe a structure in plain language and the LLM will generate "
     "a Python script to simulate its small angle scattering curve. "
@@ -105,35 +90,38 @@ st.info(
     "[github.com/pozzo-research-group/MC-DFM](https://github.com/pozzo-research-group/MC-DFM)."
 )
 
-# --- Sidebar: credentials and model selection ---
-with st.sidebar:
-    st.header("⚙️ Setup")
-    api_key = st.text_input(
-        "AtomGPT API Key",
-        type="password",
-        help="Create a free account at atomgpt.org, then copy your key from "
-             "Settings → Account → Show API key.",
-    )
-    available_models = (get_models(api_key) or [DEFAULT_MODEL]) if api_key else [DEFAULT_MODEL]
-    default_index = available_models.index(DEFAULT_MODEL) if DEFAULT_MODEL in available_models else 0
-    model = st.selectbox("Model", available_models, index=default_index)
-    st.markdown("[Get a free API key ↗](https://atomgpt.org)")
+api_key = st.text_input("AtomGPT API Key (Create a free account at [atomgpt.org](https://atomgpt.org) and copy your "
+    "API key from **Settings → Account → Show API key**.)", type="password")
+
+
+@st.cache_data(show_spinner=False)
+def get_models(key):
+    """Fetches the list of available AtomGPT models (cached per API key)."""
+    return list_atomgpt_models(key)
+
+
+# Model dropdown, populated from the models currently available on AtomGPT once
+# an API key is entered. Falls back to the default model until then.
+if api_key:
+    available_models = get_models(api_key) or [DEFAULT_MODEL]
+else:
+    available_models = [DEFAULT_MODEL]
+
+default_index = available_models.index(DEFAULT_MODEL) if DEFAULT_MODEL in available_models else 0
+model = st.selectbox("Model", available_models, index=default_index)
 
 save_dir = DEFAULT_SAVE_DIR
 
-# --- Main: describe the structure ---
-st.subheader("Describe your structure")
-
+# Example prompts that fill the instructions box when clicked.
 EXAMPLES = {
-    "🔵 Sphere": "Simulate the scattering of a sphere with a radius of 50 angstroms.",
-    "🔺 Pyramid": "Simulate the scattering of a square-based pyramid with an edge length of 10 nm and a height of 10 nm.",
-    "🧅 Core–shell": "Simulate the scattering of a core-shell sphere with a core radius of 40 angstroms and a shell thickness of 15 angstroms.",
-    "⬡ Dimer": "Simulate the scattering of a dimer of spheres, each 30 angstroms in radius, separated by 80 angstroms.",
+    "Sphere": "Simulate the scattering of a sphere with a radius of 50 angstroms.",
+    "Pyramid": "Simulate the scattering of a square-based pyramid with an edge length of 10 nm and a height of 10 nm.",
+    "Core-shell": "Simulate the scattering of a core-shell sphere with a core radius of 40 angstroms and a shell thickness of 15 angstroms.",
+    "Dimer": "Simulate the scattering of a dimer of spheres, each 30 angstroms in radius, separated by 80 angstroms.",
 }
-st.caption("Need a starting point? Click an example to fill the box:")
 ex_cols = st.columns(len(EXAMPLES))
 for col, (label, text) in zip(ex_cols, EXAMPLES.items()):
-    if col.button(label, use_container_width=True):
+    if col.button(label):
         st.session_state["instructions_input"] = text
 
 st.session_state.setdefault("instructions_input", "")
@@ -141,7 +129,6 @@ instructions = st.text_area(
     "Instructions",
     key="instructions_input",
     placeholder="Simulate the scattering of a square-based pyramid with an edge length of 10 nm and a height of 10 nm.",
-    height=120,
 )
 
 if "folder" not in st.session_state:
@@ -178,7 +165,6 @@ if st.button("Generate script", type="primary"):
 
 # --- Show the (editable) generated script and offer to run it ---
 if st.session_state.code:
-    st.divider()
     st.subheader("Generated script (editable)")
     st.caption("Edit the code below before running if you want to tweak or fix it. A common edit is the desired q-range.")
     st.session_state.setdefault("editor", st.session_state.code)
