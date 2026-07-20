@@ -156,14 +156,21 @@ if st.button("Generate script", type="primary"):
         log_user_input(save_dir, model, instructions)
         prune_old_runs(save_dir)
         before = set(os.listdir(save_dir))
+        gen_error = None
         with st.spinner("Generating code ..."):
             try:
                 asyncio.run(use_llm(api_key, model, instructions, save_dir))
             except Exception as e:
-                st.error(f"Error calling AtomGPT: {type(e).__name__}: {e}")
+                gen_error = e
+                # Log the real error for the owner (visible in Manage app -> Logs).
+                print(f"ATOMGPT_ERROR\t{type(e).__name__}: {e}", flush=True)
         new_folders = set(os.listdir(save_dir)) - before
-        if not new_folders:
-            st.error("No script was generated. Check the API key, model name, and AtomGPT status.")
+        if gen_error is not None or not new_folders:
+            st.error(
+                "⚠️ The app is currently unavailable. The shared daily usage limit may "
+                "have been reached, or AtomGPT may be temporarily down. Please try "
+                "again later."
+            )
         else:
             folder = os.path.join(save_dir, sorted(new_folders)[-1])
             with open(os.path.join(folder, "generated_script.py"), "r", encoding="utf-8") as f:
@@ -236,6 +243,13 @@ if st.session_state.code:
 
                 if images:
                     st.subheader("Plots")
+                    st.caption(
+                        "The structure plots are 3D representations of the structure "
+                        "that the scattering curve is calculated from. The dots are a "
+                        "small sample of the pairwise points used to calculate the "
+                        "scattering curve; the number of points can be controlled in "
+                        "the generated Python script."
+                    )
                     for img in images:
                         st.image(img, caption=os.path.basename(img))
                 else:
