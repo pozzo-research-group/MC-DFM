@@ -38,6 +38,31 @@ This means the dependency install did not complete. Common causes and fixes:
   settings (or Manage app → Settings), then reboot the app.
 - Open **Manage app → Logs** to see which package failed, and adjust its pin.
 
+## Providing a shared API key (optional)
+
+The app can supply a shared AtomGPT key from **Streamlit secrets** so visitors can
+use it without creating an account. The key is stored server-side and never
+committed to the repo or shown to users.
+
+1. In the app, open **Manage app → Settings → Secrets**.
+2. Add:
+
+   ```toml
+   ATOMGPT_API_KEY = "sk-your-key-here"
+   ```
+
+3. Save. The app now uses this key by default; visitors can still enter their own
+   in the optional key field (useful if the shared key hits its daily limit).
+
+Notes:
+- **Never put the key in the repo** — only in Streamlit secrets. For local testing,
+  put it in `.streamlit/secrets.toml`, which is gitignored.
+- Use a **dedicated, rotatable key** (not your personal one), since it will be
+  shared by everyone using the app.
+- All usage counts against that one key's daily quota; if it is exhausted, the app
+  shows an error until the quota resets or a visitor supplies their own key.
+- Check AtomGPT's terms of service regarding sharing a single key across users.
+
 ## How users interact with it
 
 1. Each user pastes **their own** AtomGPT API key (from atomgpt.org) — no shared

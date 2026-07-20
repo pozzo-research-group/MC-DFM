@@ -90,8 +90,25 @@ st.info(
     "[github.com/pozzo-research-group/MC-DFM](https://github.com/pozzo-research-group/MC-DFM)."
 )
 
-api_key = st.text_input("AtomGPT API Key (Create a free account at [atomgpt.org](https://atomgpt.org) and copy your "
-    "API key from **Settings → Account → Show API key**.)", type="password")
+def _default_api_key():
+    """Returns the shared AtomGPT key from Streamlit secrets, or '' if not set."""
+    try:
+        return st.secrets["ATOMGPT_API_KEY"]
+    except Exception:
+        return ""
+
+
+DEFAULT_API_KEY = _default_api_key()
+
+_user_key = st.text_input(
+    "AtomGPT API Key (optional)",
+    type="password",
+    help="A shared key is provided, so you can use the app right away. Optionally "
+         "enter your own free key from atomgpt.org (Settings → Account → Show API "
+         "key) — useful if the shared key has reached its daily limit.",
+)
+# Use the visitor's own key if they entered one, otherwise the shared key.
+api_key = _user_key or DEFAULT_API_KEY
 
 
 @st.cache_data(show_spinner=False)
@@ -139,7 +156,7 @@ if "folder" not in st.session_state:
 # --- Generate the script ---
 if st.button("Generate script", type="primary"):
     if not api_key:
-        st.error("Please enter your AtomGPT API key.")
+        st.error("No API key available. Enter your own AtomGPT key above.")
     elif not instructions.strip():
         st.error("Please enter instructions.")
     else:
