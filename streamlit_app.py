@@ -98,17 +98,8 @@ def _default_api_key():
         return ""
 
 
-DEFAULT_API_KEY = _default_api_key()
-
-_user_key = st.text_input(
-    "AtomGPT API Key (optional)",
-    type="password",
-    help="A shared key is provided, so you can use the app right away. Optionally "
-         "enter your own free key from atomgpt.org (Settings → Account → Show API "
-         "key) — useful if the shared key has reached its daily limit.",
-)
-# Use the visitor's own key if they entered one, otherwise the shared key.
-api_key = _user_key or DEFAULT_API_KEY
+# The app uses a shared AtomGPT key provided via Streamlit secrets.
+api_key = _default_api_key()
 
 
 @st.cache_data(show_spinner=False)
@@ -156,7 +147,7 @@ if "folder" not in st.session_state:
 # --- Generate the script ---
 if st.button("Generate script", type="primary"):
     if not api_key:
-        st.error("No API key available. Enter your own AtomGPT key above.")
+        st.error("No API key is configured for this app. Please try again later.")
     elif not instructions.strip():
         st.error("Please enter instructions.")
     else:
