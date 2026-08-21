@@ -18,6 +18,7 @@ import os
 import sys
 import time
 import glob
+import uuid
 import shutil
 import asyncio
 import subprocess
@@ -144,8 +145,26 @@ if "folder" not in st.session_state:
     st.session_state.folder = None
     st.session_state.code = None
 
+# A per-visitor conversation id gives each user their own memory of prior prompts.
+if "session_id" not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())
+
 # --- Generate the script ---
-if st.button("Generate script", type="primary"):
+gen_col, new_col = st.columns([1, 1])
+generate_clicked = gen_col.button("Generate script", type="primary", use_container_width=True)
+if new_col.button("🔄 New conversation", use_container_width=True):
+    # Start a fresh conversation: new memory id and cleared outputs.
+    st.session_state.session_id = str(uuid.uuid4())
+    st.session_state.code = None
+    st.session_state.folder = None
+    st.session_state.pop("editor", None)
+    st.rerun()
+st.caption(
+    "This app remembers your previous prompts in this session, so you can refine "
+    'your structure (e.g., "now make it a dimer"). Click **New conversation** to start over.'
+)
+
+if generate_clicked:
     if not api_key:
         st.error("No API key is configured for this app. Please try again later.")
     elif not instructions.strip():
@@ -155,16 +174,18 @@ if st.button("Generate script", type="primary"):
         # Record the user's prompt (owner-visible) and bound disk use.
         log_user_input(save_dir, model, instructions)
         prune_old_runs(save_dir)
-        before = set(os.listdir(save_dir))
+        before = {d for d in os.listdir(save_dir) if os.path.isdir(os.path.join(save_dir, d))}
         gen_error = None
         with st.spinner("Generating code ..."):
             try:
-                asyncio.run(use_llm(api_key, model, instructions, save_dir))
+                asyncio.run(use_llm(api_key, model, instructions, save_dir,
+                                    session_id=st.session_state.session_id))
             except Exception as e:
                 gen_error = e
                 # Log the real error for the owner (visible in Manage app -> Logs).
                 print(f"ATOMGPT_ERROR\t{type(e).__name__}: {e}", flush=True)
-        new_folders = set(os.listdir(save_dir)) - before
+        new_folders = {d for d in os.listdir(save_dir)
+                       if os.path.isdir(os.path.join(save_dir, d))} - before
         if gen_error is not None or not new_folders:
             st.error(
                 "⚠️ The app is currently unavailable. The shared daily usage limit may "

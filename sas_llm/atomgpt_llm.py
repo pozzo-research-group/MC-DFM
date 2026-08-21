@@ -1,20 +1,24 @@
 import agapi #MUST DOWNLOAD VERSION agapi==2025.11.15
 from openai import AsyncOpenAI, OpenAI
 from agents import function_tool, Agent, OpenAIChatCompletionsModel
-from agents import set_tracing_disabled, Runner, ModelSettings
+from agents import set_tracing_disabled, Runner, ModelSettings, SQLiteSession
 from agapi.client import Agapi
 import numpy as np
 import re
 import asyncio
 import os
 import sys
+import tempfile
 from datetime import datetime
 
 
 _SAS_LLM_DIR = os.path.dirname(os.path.abspath(__file__))
+# Default location for the conversation-memory database. Kept outside any results
+# directory so it does not interfere with results-folder detection.
+_SESSIONS_DB = os.path.join(tempfile.gettempdir(), "mcdfm_sessions.db")
 
 
-async def use_llm(api_key, model, input_text, save_dir):
+async def use_llm(api_key, model, input_text, save_dir, session_id=None, session_db=None):
     # if mode == 'weighted_sum':
     #     instructions_path = os.path.join(_SAS_LLM_DIR, "instructions_weighted_sum.txt")
     # elif mode == 'distribution':
@@ -43,7 +47,14 @@ async def use_llm(api_key, model, input_text, save_dir):
         )
     )
 
-    result = await Runner.run(agent, input_text)
+    # Optional conversation memory: when a session_id is given, prior turns are
+    # automatically loaded and this turn is saved, so follow-up prompts (e.g.
+    # "now make it a dimer") build on the previous structure.
+    session = None
+    if session_id:
+        session = SQLiteSession(session_id, session_db or _SESSIONS_DB)
+
+    result = await Runner.run(agent, input_text, session=session)
 
     code = extract_python_code(result.final_output)
 
