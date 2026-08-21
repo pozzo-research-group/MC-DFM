@@ -91,6 +91,17 @@ st.info(
     "[github.com/pozzo-research-group/MC-DFM](https://github.com/pozzo-research-group/MC-DFM)."
 )
 
+with st.expander("🆕 What's new — August 20, 2026"):
+    st.markdown(
+        "- **Memory:** the AI agent now remembers your previous inputs within a "
+        'conversation, so you can refine your structure (e.g., "now make it a dimer"). '
+        "Click **New conversation** to start over.\n"
+        "- **Protein Data Bank search:** the AI can now find and download PDB files "
+        "online, so you can simulate a protein by its name or ID. Always double-check "
+        "that the PDB ID used in the generated Python script matches the protein you "
+        "want to simulate."
+    )
+
 def _default_api_key():
     """Returns the shared AtomGPT key from Streamlit secrets, or '' if not set."""
     try:
