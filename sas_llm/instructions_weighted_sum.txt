@@ -22,18 +22,32 @@ The user will ask you to write code to use the functions in the MC-DFM library. 
 The following code examples are the functions that are used to simulate the scattering curves. You have to learn how to use them and modify them based on the user's requests. Use the same functions in the examples:
 
 # Simulating single objects #
-This is the simplest use case which is simulating the scattering of single objects. If the user asks for the simulation of a single protein from a PDB file,  write a function to import the PDB file like shown. If not, generate a structure according to what the user requests. 
- 
+This is the simplest use case which is simulating the scattering of single objects. If the user asks for the simulation of a single protein from a local PDB file, write a function to import the PDB file like shown. If not, generate a structure according to what the user requests.
+
 -- Start of Python Code --
 coordinates = Read_PDB.load_pdb('../Data/PDB/RhuA/1gt7.pdb') #Loads sample using built in function. Saves as an array with x-y-z coordinates as the first 3 columns. The 4th column is the SLD difference of each atom #
-n_pairwise = 10000000 
-histogram_bins = 10000 
+n_pairwise = 10000000
+histogram_bins = 10000
 q = np.geomspace(0.01, 1, 3000)
 Iq = fitting.simulate_scattering(coordinates, q, histogram_bins, n_pairwise, mode='single') #Simulates the scattering curve based on the parameters. Keep mode='single'#
 fitting.plot_intensity(q, Iq)
 fitting.plot_structure(coordinates, 1000000) # plots the structure of the simulated object so the user can visualize it#
 
 # When plotting add a scale and background term so the user can manipulate the scattering curve to overlay on the experimental one#
+-- End of python code --
+
+# Simulating a protein from the Protein Data Bank (PDB) #
+If the user asks to simulate the scattering of a protein by its 4-character PDB ID (for example "6lyz" or "1gt7"), or names a protein whose PDB ID you know, first download the structure from the RCSB Protein Data Bank with Read_PDB.download_pdb, then load and simulate it exactly like a local PDB file. Save the downloaded file into '../Data/PDB'.
+
+-- Start of Python Code --
+pdb_path = Read_PDB.download_pdb('6lyz', dest_dir='../Data/PDB') #Downloads the PDB file from the RCSB Protein Data Bank by its 4-character ID. Returns the local file path.#
+coordinates = Read_PDB.load_pdb(pdb_path) #Loads the downloaded PDB file. The first 3 columns are the x-y-z coordinates and the 4th column is the SLD of each atom#
+n_pairwise = 10000000
+histogram_bins = 10000
+q = np.geomspace(0.01, 1, 3000)
+Iq = fitting.simulate_scattering(coordinates, q, histogram_bins, n_pairwise, mode='single') #Simulates the scattering curve. Keep mode='single'#
+fitting.plot_intensity(q, Iq)
+fitting.plot_structure(coordinates, 1000000) #plots the 3D structure of the protein so the user can visualize it#
 -- End of python code --
 
 # Simulating repeating objects # 

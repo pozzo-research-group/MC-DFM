@@ -105,6 +105,31 @@ def atom_to_sld(atom):
 
 
 
+def download_pdb(pdb_id, dest_dir='.', assembly=False):
+    '''Downloads a structure from the RCSB Protein Data Bank and returns the local file path.
+
+    inputs:
+    - pdb_id: 4-character PDB ID, e.g. "6lyz" (case-insensitive).
+    - dest_dir: directory to save the file into (created if it does not exist).
+    - assembly: if True, download the first biological assembly (.pdb1) instead of
+      the asymmetric unit (.pdb).
+
+    output:
+    - path to the downloaded .pdb file.'''
+    import urllib.request
+
+    pdb_id = pdb_id.strip().lower()
+    ext = 'pdb1' if assembly else 'pdb'
+    url = f'https://files.rcsb.org/download/{pdb_id}.{ext}'
+    os.makedirs(dest_dir, exist_ok=True)
+    dest = os.path.join(dest_dir, f'{pdb_id}.pdb')
+    try:
+        urllib.request.urlretrieve(url, dest)
+    except Exception as e:
+        raise RuntimeError(f"Could not download PDB '{pdb_id}' from {url}: {e}")
+    return dest
+
+
 def load_pdb(filename):
     '''Returns an array where the first 3 columns contain the x,y,z coordinates of the atoms, and the last column contains
        the SLD of the atoms'''
