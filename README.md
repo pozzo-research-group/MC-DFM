@@ -51,7 +51,7 @@ Further details on the methods used in this work can be found in the following p
 
 	[![arXiv](https://img.shields.io/badge/arXiv-2025.zktwx-b31b1b.svg)](https://chemrxiv.org/engage/chemrxiv/article-details/679a8c0181d2151a02758fba) [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://journals.iucr.org/paper?uu5014)	
 
-The algorithm developed in this work has been used to analyze experimental small-angle scattering data of large protein assemblies in the following publications:
+The algorithm developed in this work has been used to analyze experimental small-angle scattering data of large structures in the following publications:
 
 1. Design of light-and chemically responsive protein assemblies through host-guest interactions
 
@@ -64,6 +64,11 @@ The algorithm developed in this work has been used to analyze experimental small
 3. Role of Polymer-Protein Interactions in the Dynamics of Polymer-Integrated Protein Crystals 
   [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://pubs.acs.org/doi/full/10.1021/jacs.6c02182)	
 
+4. Assembly of small silica nanoparticles using lipid-tethered DNA 'bonds'
+  [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://pubs.rsc.org/sm/article/21/48/9398/912925/Assembly-of-small-silica-nanoparticles-using-lipid)	
+
+5. Integrating molecular simulations with experimental characterization using a series alignment algorithm
+  [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://pubs.rsc.org/sm/article/22/41/6984/1368362/Integrating-molecular-simulations-with)	
 
 
 ## Installation
