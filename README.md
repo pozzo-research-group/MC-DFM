@@ -70,6 +70,7 @@ The algorithm developed in this work has been used to analyze experimental small
    [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://pubs.rsc.org/sm/article/21/48/9398/912925/Assembly-of-small-silica-nanoparticles-using-lipid)	
 
 5. Integrating molecular simulations with experimental characterization using a series alignment algorithm
+  
    [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://pubs.rsc.org/sm/article/22/41/6984/1368362/Integrating-molecular-simulations-with)	
 
 
