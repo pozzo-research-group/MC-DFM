@@ -64,7 +64,7 @@ The algorithm developed in this work has been used to analyze experimental small
 3. Role of Polymer-Protein Interactions in the Dynamics of Polymer-Integrated Protein Crystals 
   [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://pubs.acs.org/doi/full/10.1021/jacs.6c02182)	
 
-4. Assembly of small silica nanoparticles using lipid-tethered DNA 'bonds'          
+4. Assembly of small silica nanoparticles using lipid-tethered DNA 'bonds'
 
   [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://pubs.rsc.org/sm/article/21/48/9398/912925/Assembly-of-small-silica-nanoparticles-using-lipid)	
 
