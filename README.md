@@ -49,29 +49,29 @@ Further details on the methods used in this work can be found in the following p
 
 1. Efficient analysis of small-angle scattering curves for large biomolecular assemblies using Monte Carlo methods
 
-	[![arXiv](https://img.shields.io/badge/arXiv-2025.zktwx-b31b1b.svg)](https://chemrxiv.org/engage/chemrxiv/article-details/679a8c0181d2151a02758fba) [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://journals.iucr.org/paper?uu5014)	
+	[![chemRxiv](https://img.shields.io/badge/chemRxiv-preprint-b31b1b.svg)](https://chemrxiv.org/engage/chemrxiv/article-details/679a8c0181d2151a02758fba) [![DOI](https://img.shields.io/static/v1?label=DOI&message=10.1107%2Fs1600576725003267&color=blue)](https://doi.org/10.1107/s1600576725003267)	
 
 The algorithm developed in this work has been used to analyze experimental small-angle scattering data of large structures in the following publications:
 
 1. Design of light-and chemically responsive protein assemblies through host-guest interactions
 
-	[![arXiv](https://img.shields.io/badge/arXiv-2025.zktwx-b31b1b.svg)](https://www.osti.gov/pages/servlets/purl/2558143) [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://www.cell.com/chem/abstract/S2451-9294(24)00652-1)	
+	[![OSTI](https://img.shields.io/badge/OSTI-full%20text-b31b1b.svg)](https://www.osti.gov/pages/servlets/purl/2558143) [![DOI](https://img.shields.io/static/v1?label=DOI&message=10.1016%2Fj.chempr.2024.102407&color=blue)](https://doi.org/10.1016/j.chempr.2024.102407)	
 
 2. Bond-centric modular design of protein assemblies
 
-	[![arXiv](https://img.shields.io/badge/arXiv-2025.zktwx-b31b1b.svg)](https://www.biorxiv.org/content/10.1101/2024.10.11.617872v1) [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://www.nature.com/articles/s41563-025-02297-5)
+	[![bioRxiv](https://img.shields.io/badge/bioRxiv-preprint-b31b1b.svg)](https://www.biorxiv.org/content/10.1101/2024.10.11.617872v1) [![DOI](https://img.shields.io/static/v1?label=DOI&message=10.1038%2Fs41563-025-02297-5&color=blue)](https://doi.org/10.1038/s41563-025-02297-5)
 
 3. Role of Polymer-Protein Interactions in the Dynamics of Polymer-Integrated Protein Crystals 
    
-   [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://pubs.acs.org/doi/full/10.1021/jacs.6c02182)	
+   [![DOI](https://img.shields.io/static/v1?label=DOI&message=10.1021%2Fjacs.6c02182&color=blue)](https://doi.org/10.1021/jacs.6c02182)	
 
 4. Assembly of small silica nanoparticles using lipid-tethered DNA 'bonds'
 
-   [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://pubs.rsc.org/sm/article/21/48/9398/912925/Assembly-of-small-silica-nanoparticles-using-lipid)	
+   [![DOI](https://img.shields.io/static/v1?label=DOI&message=10.1039%2Fd5sm00924c&color=blue)](https://doi.org/10.1039/d5sm00924c)	
 
 5. Integrating molecular simulations with experimental characterization using a series alignment algorithm
   
-   [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524.025.01822.z-blue)](https://pubs.rsc.org/sm/article/22/41/6984/1368362/Integrating-molecular-simulations-with)	
+   [![DOI](https://img.shields.io/static/v1?label=DOI&message=10.1039%2Fd6sm00888g&color=blue)](https://doi.org/10.1039/d6sm00888g)	
 
 
 ## Installation
