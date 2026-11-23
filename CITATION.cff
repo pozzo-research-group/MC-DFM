@@ -3,7 +3,12 @@ message: "If you use this software, please cite the paper below."
 title: "MC-DFM"
 type: software
 authors:
-  - name: "Pozzo Research Group, University of Washington"
+  - family-names: "Chiang"
+    given-names: "Huat Thart"
+    orcid: "https://orcid.org/0000-0002-0042-7958"
+  - family-names: "Pozzo"
+    given-names: "Lilo D."
+    orcid: "https://orcid.org/0000-0001-7104-9061"
 repository-code: "https://github.com/pozzo-research-group/MC-DFM"
 url: "https://pozzorg.com"
 preferred-citation:
