@@ -1,4 +1,4 @@
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/pozzo-research-group/MC-DFM)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/pozzo-research-group/MC-DFM) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24484804.svg)](https://doi.org/10.5281/zenodo.24484804)
 
 ## Description
 MC-DFM is a Python package for computing small-angle X-ray and neutron scattering (SAXS/SANS) curves of large hierarchical structures using the **Monte Carlo Distribution Function Method**. It is designed for systems too large for the direct Debye equation — such as protein crystals, protein tubes and sheets, nanoparticle superlattices, and fractal aggregates — while remaining fast enough to run on an ordinary laptop. GPU acceleration is supported via PyTorch when a CUDA device is available.
